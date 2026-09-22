@@ -1,0 +1,196 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-09-22 17:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "merchant",
+  "exception_type",
+  "cb0",
+  "status",
+  "detected_on",
+  "sb1",
+  "expected_amount",
+  "actual_amount",
+  "cb1",
+  "variance",
+  "sb2",
+  "owner_user",
+  "resolved_on",
+  "cb2",
+  "source_document",
+  "source_doctype",
+  "sb3",
+  "detail",
+  "resolution_note"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "REX-.#####",
+   "reqd": 1,
+   "default": "REX-.#####",
+   "hidden": 1
+  },
+  {
+   "fieldname": "merchant",
+   "fieldtype": "Link",
+   "label": "Merchant",
+   "options": "Customer",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "exception_type",
+   "fieldtype": "Select",
+   "label": "Exception Type",
+   "options": "Underbilled\nUnbilled Subscription\nRate Mismatch\nMissing Residual\nUnmapped MID",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "cb0",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Open\nInvestigating\nResolved",
+   "default": "Open",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "detected_on",
+   "fieldtype": "Date",
+   "label": "Detected On",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sb1",
+   "fieldtype": "Section Break",
+   "label": "Amounts"
+  },
+  {
+   "fieldname": "expected_amount",
+   "fieldtype": "Currency",
+   "label": "Expected Amount",
+   "description": "What the approved price and contract say"
+  },
+  {
+   "fieldname": "actual_amount",
+   "fieldtype": "Currency",
+   "label": "Actual Amount",
+   "description": "What was actually billed or received"
+  },
+  {
+   "fieldname": "cb1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "variance",
+   "fieldtype": "Currency",
+   "label": "Variance",
+   "read_only": 1,
+   "in_list_view": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "sb2",
+   "fieldtype": "Section Break",
+   "label": "Ownership"
+  },
+  {
+   "fieldname": "owner_user",
+   "fieldtype": "Link",
+   "label": "Assigned To",
+   "options": "User"
+  },
+  {
+   "fieldname": "resolved_on",
+   "fieldtype": "Date",
+   "label": "Resolved On",
+   "depends_on": "eval:doc.status=='Resolved'"
+  },
+  {
+   "fieldname": "cb2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "source_document",
+   "fieldtype": "Dynamic Link",
+   "label": "Source Document",
+   "options": "source_doctype"
+  },
+  {
+   "fieldname": "source_doctype",
+   "fieldtype": "Link",
+   "label": "Source Doctype",
+   "options": "DocType",
+   "hidden": 1
+  },
+  {
+   "fieldname": "sb3",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "detail",
+   "fieldtype": "Small Text",
+   "label": "Detail"
+  },
+  {
+   "fieldname": "resolution_note",
+   "fieldtype": "Small Text",
+   "label": "Resolution Note",
+   "depends_on": "eval:doc.status=='Resolved'"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-22 17:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Merchant Operations",
+ "name": "Revenue Exception",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "naming_series:",
+ "title_field": "merchant",
+ "search_fields": "merchant,exception_type,status"
+}

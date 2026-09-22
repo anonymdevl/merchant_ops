@@ -1,0 +1,77 @@
+/* Login and portal branding.
+   Applied over Frappe's own markup rather than replacing it, so that upgrades
+   to login.html continue to work. Everything here is presentational. */
+
+:root {
+	--mo-portal-accent: #12303f;
+}
+
+body.no-sidebar .page-card,
+.login-content.page-card {
+	border: 1px solid #e1e6e9;
+	border-radius: 4px;
+	box-shadow: 0 10px 40px rgba(18, 48, 63, 0.10);
+	padding: 32px 30px 28px;
+	max-width: 400px;
+}
+
+.mo-brand {
+	text-align: center;
+	margin-bottom: 22px;
+	padding-bottom: 18px;
+	border-bottom: 1px solid #e8ecee;
+}
+.mo-brand img { max-height: 44px; margin-bottom: 12px; }
+.mo-brand-name {
+	font-size: 15px;
+	font-weight: 600;
+	letter-spacing: 2.4px;
+	text-transform: uppercase;
+	color: var(--mo-portal-accent);
+}
+.mo-brand-tagline {
+	font-size: 11px;
+	letter-spacing: 0.4px;
+	color: #77848c;
+	margin-top: 5px;
+}
+
+.page-card .btn-primary {
+	background: var(--mo-portal-accent);
+	border-color: var(--mo-portal-accent);
+	font-weight: 500;
+	letter-spacing: 0.3px;
+}
+.page-card .btn-primary:hover,
+.page-card .btn-primary:focus {
+	filter: brightness(1.15);
+}
+.page-card .form-control:focus {
+	border-color: var(--mo-portal-accent);
+	box-shadow: 0 0 0 2px rgba(18, 48, 63, 0.12);
+}
+
+.mo-support {
+	margin-top: 18px;
+	padding-top: 14px;
+	border-top: 1px solid #eef1f3;
+	text-align: center;
+	font-size: 11.5px;
+	color: #8a949b;
+}
+
+body.mo-has-bg {
+	background-size: cover;
+	background-position: center;
+	background-attachment: fixed;
+}
+body.mo-has-bg .page-card {
+	background: rgba(255, 255, 255, 0.97);
+	backdrop-filter: blur(2px);
+}
+
+/* Hide sign-up unless the setting turns it on. */
+body.mo-no-signup .page-card a[href*="signup"],
+body.mo-no-signup .page-card .sign-up-link {
+	display: none !important;
+}

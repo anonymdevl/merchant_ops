@@ -1,0 +1,108 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-09-22 17:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "brand_name",
+  "tagline",
+  "logo",
+  "cb0",
+  "accent_colour",
+  "background_image",
+  "show_signup",
+  "sb1",
+  "support_note"
+ ],
+ "fields": [
+  {
+   "fieldname": "brand_name",
+   "fieldtype": "Data",
+   "label": "Brand Name",
+   "default": "Meridian Payment Solutions"
+  },
+  {
+   "fieldname": "tagline",
+   "fieldtype": "Data",
+   "label": "Tagline",
+   "default": "Merchant operations platform"
+  },
+  {
+   "fieldname": "logo",
+   "fieldtype": "Attach Image",
+   "label": "Logo"
+  },
+  {
+   "fieldname": "cb0",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "accent_colour",
+   "fieldtype": "Color",
+   "label": "Accent Colour",
+   "default": "#12303f"
+  },
+  {
+   "fieldname": "background_image",
+   "fieldtype": "Attach Image",
+   "label": "Login Background"
+  },
+  {
+   "fieldname": "show_signup",
+   "fieldtype": "Check",
+   "label": "Show Sign-up Link",
+   "default": "0"
+  },
+  {
+   "fieldname": "sb1",
+   "fieldtype": "Section Break",
+   "label": "Login Page"
+  },
+  {
+   "fieldname": "support_note",
+   "fieldtype": "Small Text",
+   "label": "Support Note",
+   "default": "Trouble signing in? Contact your account manager."
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-22 17:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Merchant Operations",
+ "name": "Merchant Portal Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "issingle": 1,
+ "autoname": "Prompt"
+}

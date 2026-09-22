@@ -1,0 +1,162 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-09-22 17:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "processor",
+  "statement_period",
+  "cb0",
+  "status",
+  "imported_on",
+  "sb1",
+  "statement_file",
+  "sb2",
+  "rows_imported",
+  "rows_unmapped",
+  "cb1",
+  "gross_residual",
+  "net_residual",
+  "sb3",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "PRI-.#####",
+   "reqd": 1,
+   "default": "PRI-.#####",
+   "hidden": 1
+  },
+  {
+   "fieldname": "processor",
+   "fieldtype": "Select",
+   "label": "Processor",
+   "options": "Fiserv\nTSYS\nElavon\nNorth",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "statement_period",
+   "fieldtype": "Data",
+   "label": "Statement Period",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "YYYY-MM"
+  },
+  {
+   "fieldname": "cb0",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Imported\nPartially Mapped\nFailed",
+   "default": "Imported",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "imported_on",
+   "fieldtype": "Date",
+   "label": "Imported On"
+  },
+  {
+   "fieldname": "sb1",
+   "fieldtype": "Section Break",
+   "label": "Source File"
+  },
+  {
+   "fieldname": "statement_file",
+   "fieldtype": "Attach",
+   "label": "Statement File"
+  },
+  {
+   "fieldname": "sb2",
+   "fieldtype": "Section Break",
+   "label": "Import Result"
+  },
+  {
+   "fieldname": "rows_imported",
+   "fieldtype": "Int",
+   "label": "Rows Imported"
+  },
+  {
+   "fieldname": "rows_unmapped",
+   "fieldtype": "Int",
+   "label": "Rows Unmapped",
+   "in_list_view": 1,
+   "description": "Rows whose MID does not match any merchant. Each becomes an exception."
+  },
+  {
+   "fieldname": "cb1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "gross_residual",
+   "fieldtype": "Currency",
+   "label": "Gross Residual",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "net_residual",
+   "fieldtype": "Currency",
+   "label": "Net Residual After Fees"
+  },
+  {
+   "fieldname": "sb3",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-22 17:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Merchant Operations",
+ "name": "Processor Residual Import",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "naming_series:",
+ "search_fields": "processor,statement_period,status"
+}
