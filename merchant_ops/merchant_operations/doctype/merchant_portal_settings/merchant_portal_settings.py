@@ -114,6 +114,7 @@ def branding():
         "stats": stats,
         "show_signup": bool(cint(s.show_signup)),
         "show_forgot_password": bool(cint(s.show_forgot_password)),
+        "show_email_link": bool(cint(s.show_email_link)),
     }
 
     frappe.cache().set_value("merchant_portal_branding", data, expires_in_sec=300)

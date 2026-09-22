@@ -30,6 +30,7 @@
   "options_section",
   "show_signup",
   "show_forgot_password",
+  "show_email_link",
   "cb_options",
   "apply_to_desk"
  ],
@@ -187,6 +188,13 @@
    "label": "Show Forgot Password Link",
    "default": "1",
    "description": "Leave on unless password resets are handled by an administrator out of band."
+  },
+  {
+   "fieldname": "show_email_link",
+   "fieldtype": "Check",
+   "label": "Show Login with Email Link",
+   "default": "1",
+   "description": "Frappe offers a passwordless sign-in link as a second button. Turn it off where sign-in must go through a password."
   },
   {
    "fieldname": "cb_options",

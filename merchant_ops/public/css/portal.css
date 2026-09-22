@@ -182,3 +182,58 @@ body.mo-layout-centred .mo-mobile-logo img { margin: 0 auto; }
 	body.mo-layout-centred .mo-main { align-items: center; padding-top: 24px; }
 }
 @media (prefers-reduced-motion: reduce) { body.mo-portal * { transition: none !important; } }
+
+/* ---------------------------------------------------------------------------
+   Frappe v15+ login markup.
+
+   The page ships four hash-routed sections (login, signup, forgot, email link)
+   under one wrapper, which portal.js moves into .mo-main-inner whole. The
+   emptied original wrapper is hidden rather than removed, in case Frappe's own
+   login script still holds a reference to it.
+   --------------------------------------------------------------------------- */
+
+body.mo-portal #page-login { display: none !important; }
+
+body.mo-portal section[class*="for-"],
+body.mo-portal .page-card-body,
+body.mo-portal .form-signin { width: 100%; }
+
+/* The brand panel already carries the logo. */
+body.mo-portal img.app-logo { display: none !important; }
+
+body.mo-portal .page-card-head { margin-bottom: 20px; }
+body.mo-portal .page-card-head-text {
+	font-size: 23px; font-weight: 600; letter-spacing: -0.3px; color: var(--mo-primary);
+}
+/* Stock subtitle gives way only when a form note is configured. */
+body.mo-has-form-note .page-card-subtitle { display: none !important; }
+
+body.mo-portal .btn-login,
+body.mo-portal .btn-forgot,
+body.mo-portal .btn-signup {
+	width: 100%; height: 44px; border: 0; border-radius: 5px;
+	background: var(--mo-primary); color: var(--mo-on-primary);
+	font-size: 14px; font-weight: 600; letter-spacing: 0.3px;
+	transition: background .13s ease, transform .08s ease;
+}
+body.mo-portal .btn-login:hover,
+body.mo-portal .btn-forgot:hover,
+body.mo-portal .btn-signup:hover {
+	background: var(--mo-accent); color: var(--mo-on-accent);
+}
+body.mo-portal .btn-login:active { transform: translateY(1px); }
+
+/* Secondary action, so it must not compete with Continue. */
+body.mo-portal .btn-login-with-email-link {
+	background: #fff !important; color: var(--mo-accent) !important;
+	border: 1px solid var(--mo-line) !important; font-weight: 500; margin-top: 9px;
+}
+body.mo-portal .btn-login-with-email-link:hover { background: var(--mo-field) !important; }
+
+body.mo-portal .field-icon,
+body.mo-portal .toggle-password { color: var(--mo-muted); }
+
+body.mo-no-email-link .btn-login-with-email-link,
+body.mo-no-email-link a[href="#login-with-email-link"] { display: none !important; }
+body.mo-no-forgot a[href="#forgot"] { display: none !important; }
+body.mo-no-signup a[href="#signup"] { display: none !important; }

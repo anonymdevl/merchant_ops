@@ -35,6 +35,7 @@
 		],
 		show_signup: false,
 		show_forgot_password: true,
+		show_email_link: true,
 	};
 
 	var LAYOUT_CLASS = {
@@ -68,9 +69,18 @@
 		return '<div class="mo-aside-name">' + esc(name) + "</div>";
 	}
 
+	/* Frappe v15+ renders four hash-routed sections (login, signup, forgot,
+	   email link) as siblings under one wrapper. Move the WRAPPER, not the
+	   login card, or switching to forgot-password drops out of the layout. */
+	function findHost() {
+		var section = document.querySelector('section[class*="for-login"], section[class*="for-forgot"]');
+		if (section && section.parentElement) return section.parentElement;
+		return document.querySelector(".login-content, .page-card"); // older Frappe
+	}
+
 	function build(s) {
-		var card = document.querySelector(".page-card, .login-content");
-		if (!card || document.querySelector(".mo-split")) return;
+		var host = findHost();
+		if (!host || document.querySelector(".mo-split")) return;
 
 		var root = document.documentElement.style;
 		root.setProperty("--mo-primary", s.primary);
@@ -81,23 +91,18 @@
 		document.body.classList.add("mo-portal", LAYOUT_CLASS[s.layout] || "mo-layout-split");
 		if (!s.show_signup) document.body.classList.add("mo-no-signup");
 		if (!s.show_forgot_password) document.body.classList.add("mo-no-forgot");
+		if (!s.show_email_link) document.body.classList.add("mo-no-email-link");
 		if (s.brand_name) document.title = s.brand_name;
 
 		var split = el("div", "mo-split");
 
-		// --- brand panel ----------------------------------------------------
 		var aside = el("div", "mo-aside");
 		if (s.background) {
 			aside.classList.add("mo-has-bg");
 			aside.style.backgroundImage =
-				"linear-gradient(180deg," +
-				"color-mix(in srgb, var(--mo-primary) 86%, transparent)," +
-				"color-mix(in srgb, var(--mo-primary) 95%, transparent))," +
-				"url('" + s.background + "')";
+				"linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.72)), url('" + s.background + "')";
 		}
-		aside.appendChild(
-			el("div", "mo-aside-logo", brandBlock(s.logo_reversed, s.brand_name))
-		);
+		aside.appendChild(el("div", "mo-aside-logo", brandBlock(s.logo_reversed, s.brand_name)));
 
 		var body = "";
 		if (s.headline) body += '<h1 class="mo-aside-head">' + esc(s.headline) + "</h1>";
@@ -106,51 +111,39 @@
 		aside.appendChild(el("div", "mo-aside-body", body));
 
 		if (s.show_stats && s.stats && s.stats.length) {
-			var strip = s.stats
-				.map(function (st) {
-					return (
-						"<div><div class='mo-stat-value'>" +
-						esc(st.value) +
-						"</div><div class='mo-stat-label'>" +
-						esc(st.label) +
-						"</div></div>"
-					);
-				})
-				.join("");
-			aside.appendChild(el("div", "mo-stats", strip));
+			aside.appendChild(
+				el("div", "mo-stats", s.stats.map(function (st) {
+					return "<div><div class='mo-stat-value'>" + esc(st.value) +
+						"</div><div class='mo-stat-label'>" + esc(st.label) + "</div></div>";
+				}).join(""))
+			);
 		} else {
 			aside.appendChild(el("div", "mo-stats-spacer"));
 		}
 
-		// --- form side ------------------------------------------------------
 		var main = el("div", "mo-main");
 		var inner = el("div", "mo-main-inner");
-		inner.appendChild(
-			el("div", "mo-mobile-logo", brandBlock(s.logo || s.logo_reversed, s.brand_name))
-		);
+		inner.appendChild(el("div", "mo-mobile-logo", brandBlock(s.logo || s.logo_reversed, s.brand_name)));
 
-		var parent = card.parentNode;
-		var anchor = document.createComment("mo-anchor");
-		parent.insertBefore(anchor, card);
-		inner.appendChild(card);
-
-		var head = card.querySelector(".page-card-head");
-		if (head && s.form_note && !head.querySelector(".mo-form-note")) {
-			head.appendChild(el("p", "mo-form-note", esc(s.form_note)));
-		}
-		if (s.support_note) inner.appendChild(el("div", "mo-support", esc(s.support_note)));
-		if (s.security_note) {
-			inner.appendChild(
-				el("div", "mo-secure", LOCK + "<span>" + esc(s.security_note) + "</span>")
-			);
-		}
-
-		main.appendChild(inner);
+		// Attach the shell to body first so it escapes Frappe's .container,
+		// then move the section wrapper in whole.
 		split.appendChild(aside);
 		split.appendChild(main);
+		main.appendChild(inner);
+		document.body.appendChild(split);
+		inner.appendChild(host);
 
-		if (anchor.parentNode) anchor.parentNode.replaceChild(split, anchor);
-		else document.body.appendChild(split);
+		// Our note replaces Frappe's stock subtitle only when one is configured.
+		var head = document.querySelector("section[class*='for-login'] .page-card-head");
+		if (head && s.form_note && !head.querySelector(".mo-form-note")) {
+			head.appendChild(el("p", "mo-form-note", esc(s.form_note)));
+			document.body.classList.add("mo-has-form-note");
+		}
+
+		if (s.support_note) inner.appendChild(el("div", "mo-support", esc(s.support_note)));
+		if (s.security_note) {
+			inner.appendChild(el("div", "mo-secure", LOCK + "<span>" + esc(s.security_note) + "</span>"));
+		}
 	}
 
 	function init() {
