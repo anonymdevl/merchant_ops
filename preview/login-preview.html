@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login preview</title>
+<link rel="stylesheet" href="../merchant_ops/public/css/portal.css">
+<style>
+  /* A minimal stand-in for Frappe's own login markup and base styles,
+     so the injected branding can be judged before deployment. */
+  body { font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin:0; }
+  .page-card { width: 400px; margin: 60px auto; padding: 30px; border: 1px solid #d1d8dd; border-radius: 6px; }
+  .page-card-head h4 { margin: 0 0 18px; font-size: 18px; }
+  .form-group { margin-bottom: 14px; }
+  .control-label { display:block; margin-bottom: 5px; font-size: 13px; }
+  .form-control { width:100%; height:34px; padding:0 10px; border:1px solid #d1d8dd; border-radius:4px; font-size:14px; box-sizing:border-box; }
+  .btn-primary { width:100%; height:34px; background:#2490ef; color:#fff; border:0; border-radius:4px; cursor:pointer; }
+  .forgot { margin-top:12px; font-size:13px; }
+  a { color:#2490ef; text-decoration:none; }
+</style>
+</head>
+<body>
+
+<div class="page-card">
+  <div class="page-card-head">
+    <h4>Login</h4>
+  </div>
+  <form>
+    <div class="form-group">
+      <label class="control-label" for="u">Email</label>
+      <input class="form-control" id="u" type="email" placeholder="you@company.com" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label class="control-label" for="p">Password</label>
+      <input class="form-control" id="p" type="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-primary" type="button">Login</button>
+  </form>
+  <div class="forgot"><a href="/forgot">Forgot Password?</a></div>
+</div>
+
+<script>
+  // Stand in for the guest branding endpoint, and force the /login path check.
+  window.fetch = function () {
+    return Promise.resolve({
+      ok: true,
+      json: function () {
+        return Promise.resolve({ message: {
+          brand_name: "Meridian Payment Solutions",
+          tagline: "Merchant operations platform",
+          logo: null,
+          accent_colour: "#2e86ab",
+          background_image: null,
+          support_note: "Trouble signing in? Contact your account manager.",
+          show_signup: false
+        }});
+      }
+    });
+  };
+  history.replaceState({}, "", "/login");
+</script>
+<script src="../merchant_ops/public/js/portal.js"></script>
+</body>
+</html>

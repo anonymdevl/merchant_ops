@@ -11,11 +11,8 @@ class ProcessorResidualImport(Document):
             self.status = "Partially Mapped"
 
     def on_update(self):
-        """Unmapped rows are revenue that has arrived but cannot be attributed.
-
-        Left alone they disappear silently, which is the single most common way
-        residual income is lost. Surface one exception per import.
-        """
+        # Unmapped rows are revenue that arrived but cannot be attributed to a
+        # merchant. One exception per import, so they do not pass unnoticed.
         if self.rows_unmapped and not self._has_open_exception():
             frappe.get_doc({
                 "doctype": "Revenue Exception",

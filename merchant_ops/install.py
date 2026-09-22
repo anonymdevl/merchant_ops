@@ -54,10 +54,7 @@ def after_install():
 
 
 def _label_customer_as_merchant():
-    """Show Customer as 'Merchant' throughout the desk.
-
-    A Property Setter rather than a doctype edit, so ERPNext core is untouched.
-    """
+    """Relabel Customer as Merchant via Property Setter."""
     try:
         frappe.make_property_setter(
             {
@@ -67,6 +64,5 @@ def _label_customer_as_merchant():
             is_system_generated=False,
         )
     except Exception:
-        # Cosmetic only, and DocType.label is not present on every Frappe
-        # version. Never fail an install over a label.
+        # DocType.label is not present on every Frappe version; cosmetic only.
         frappe.log_error(title="merchant_ops: could not relabel Customer")

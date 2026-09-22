@@ -1,6 +1,6 @@
 [project]
 name = "merchant_ops"
-authors = [{ name = "Michael Appiah", email = "michael@ultrasoftsystems.com" }]
+authors = [{ name = "Michael Appiah", email = "michael@powersoftsystem.com" }]
 description = "Merchant commercial-to-cash operations on ERPNext"
 requires-python = ">=3.10"
 readme = "README.md"

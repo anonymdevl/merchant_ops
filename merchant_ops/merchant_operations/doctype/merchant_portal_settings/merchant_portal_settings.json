@@ -1,73 +1,206 @@
 {
  "actions": [],
- "allow_rename": 1,
+ "allow_rename": 0,
  "creation": "2026-09-22 17:00:00.000000",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "brand_section",
   "brand_name",
-  "tagline",
-  "logo",
-  "cb0",
-  "accent_colour",
-  "background_image",
+  "brand_tagline",
+  "brand_logo",
+  "brand_logo_reversed",
+  "brand_logo_icon",
+  "cb_brand",
+  "brand_primary_colour",
+  "brand_accent_colour",
+  "login_background",
+  "layout_section",
+  "login_layout",
+  "login_headline",
+  "login_subline",
+  "cb_layout",
+  "form_note",
+  "support_note",
+  "security_note",
+  "stats_section",
+  "show_stats",
+  "stats",
+  "options_section",
   "show_signup",
-  "sb1",
-  "support_note"
+  "show_forgot_password",
+  "cb_options",
+  "apply_to_desk"
  ],
  "fields": [
+  {
+   "fieldname": "brand_section",
+   "fieldtype": "Section Break",
+   "label": "Brand"
+  },
   {
    "fieldname": "brand_name",
    "fieldtype": "Data",
    "label": "Brand Name",
-   "default": "Meridian Payment Solutions"
+   "default": "Meridian Payment Solutions",
+   "description": "Shown beside the logo and used as the browser tab title. Left empty, the login falls back to the site name."
   },
   {
-   "fieldname": "tagline",
+   "fieldname": "brand_tagline",
    "fieldtype": "Data",
    "label": "Tagline",
-   "default": "Merchant operations platform"
+   "default": "Merchant operations platform",
+   "description": "One line under the brand name. Left empty the name stands alone, which reads as deliberate rather than unfinished."
   },
   {
-   "fieldname": "logo",
+   "fieldname": "brand_logo",
    "fieldtype": "Attach Image",
-   "label": "Logo"
+   "label": "Logo (for light backgrounds)",
+   "description": "Full lockup for LIGHT surfaces: the navbar, print formats, and the login form when the brand panel is not behind it. Use the dark version of your mark."
   },
   {
-   "fieldname": "cb0",
+   "fieldname": "brand_logo_reversed",
+   "fieldtype": "Attach Image",
+   "label": "Logo (for dark backgrounds)",
+   "description": "Full lockup for DARK surfaces: the login brand panel. Use the white or reversed version. Left empty this falls back to the light logo, which on a dark panel usually means an invisible one."
+  },
+  {
+   "fieldname": "brand_logo_icon",
+   "fieldtype": "Attach Image",
+   "label": "Logo Icon",
+   "description": "Square icon-only mark. Used as the favicon and wherever the full lockup will not fit."
+  },
+  {
+   "fieldname": "cb_brand",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "accent_colour",
+   "fieldname": "brand_primary_colour",
+   "fieldtype": "Color",
+   "label": "Primary Colour",
+   "default": "#0E2A38",
+   "description": "The brand panel, the sign-in button and headings. A deep neutral until the client supplies theirs — a system with no colour looks broken rather than unbranded."
+  },
+  {
+   "fieldname": "brand_accent_colour",
    "fieldtype": "Color",
    "label": "Accent Colour",
-   "default": "#12303f"
+   "default": "#2E86AB",
+   "description": "Links, the focus ring, and the button on hover. Left empty it follows the primary colour, so the page looks exactly as it does today until this is set. Text placed on it is chosen automatically, black or white, whichever stays readable."
   },
   {
-   "fieldname": "background_image",
+   "fieldname": "login_background",
    "fieldtype": "Attach Image",
-   "label": "Login Background"
+   "label": "Login Background",
+   "description": "Photograph or texture behind the brand panel. It is darkened automatically so the headline stays legible over anything. Left empty the panel uses the primary colour alone, which is the safer choice."
   },
   {
-   "fieldname": "show_signup",
-   "fieldtype": "Check",
-   "label": "Show Sign-up Link",
-   "default": "0"
-  },
-  {
-   "fieldname": "sb1",
+   "fieldname": "layout_section",
    "fieldtype": "Section Break",
    "label": "Login Page"
+  },
+  {
+   "fieldname": "login_layout",
+   "fieldtype": "Select",
+   "label": "Layout",
+   "options": "Split\nSplit - Brand Right\nCentred",
+   "default": "Split",
+   "description": "Split puts the brand panel beside the form. Centred makes the brand a full-screen backdrop with the form on a card. Every layout uses the same markup and moves Frappe's own form rather than rebuilding it, so none of them can break the sign-in itself."
+  },
+  {
+   "fieldname": "login_headline",
+   "fieldtype": "Small Text",
+   "label": "Headline",
+   "default": "Every merchant, every dollar,\nin one system of record.",
+   "description": "The line on the brand panel. A line break here becomes a line break there. Left empty the panel shows the logo and tagline alone."
+  },
+  {
+   "fieldname": "login_subline",
+   "fieldtype": "Small Text",
+   "label": "Sub-line",
+   "default": "Onboarding, billing, collections, processor reconciliation and revenue controls.",
+   "description": "Supporting sentence under the headline."
+  },
+  {
+   "fieldname": "cb_layout",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "form_note",
+   "fieldtype": "Data",
+   "label": "Form Note",
+   "default": "Sign in to the merchant operations console.",
+   "description": "Sits directly under the word Login, above the first field."
   },
   {
    "fieldname": "support_note",
    "fieldtype": "Small Text",
    "label": "Support Note",
-   "default": "Trouble signing in? Contact your account manager."
+   "default": "Trouble signing in? Contact your account manager.",
+   "description": "Footer under the form. The place to put a desk number or an internal help link."
+  },
+  {
+   "fieldname": "security_note",
+   "fieldtype": "Data",
+   "label": "Security Note",
+   "default": "Encrypted connection. No card data is stored in this system.",
+   "description": "Small print beside a padlock at the very bottom. Worth keeping — on a payments platform it answers the first question a cautious user has. Left empty the line is hidden."
+  },
+  {
+   "fieldname": "stats_section",
+   "fieldtype": "Section Break",
+   "label": "Stat Strip",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "show_stats",
+   "fieldtype": "Check",
+   "label": "Show Stat Strip",
+   "default": "1",
+   "description": "A row of figures along the foot of the brand panel. Hidden entirely when unticked or when no rows are set."
+  },
+  {
+   "fieldname": "stats",
+   "fieldtype": "Table",
+   "label": "Stats",
+   "options": "Merchant Portal Stat",
+   "depends_on": "show_stats",
+   "description": "Three or four rows is right. More than four crowds the panel at laptop width and the strip is hidden on phones regardless."
+  },
+  {
+   "fieldname": "options_section",
+   "fieldtype": "Section Break",
+   "label": "Options",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "show_signup",
+   "fieldtype": "Check",
+   "label": "Show Sign-up Link",
+   "default": "0",
+   "description": "Off by default. A back-office platform is not something people sign themselves up for."
+  },
+  {
+   "fieldname": "show_forgot_password",
+   "fieldtype": "Check",
+   "label": "Show Forgot Password Link",
+   "default": "1",
+   "description": "Leave on unless password resets are handled by an administrator out of band."
+  },
+  {
+   "fieldname": "cb_options",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "apply_to_desk",
+   "fieldtype": "Check",
+   "label": "Apply Brand to Desk Navbar",
+   "default": "1",
+   "description": "Push the logo icon and primary colour into Website Settings and Navbar Settings when this document is saved, so the desk matches the login instead of drifting from it."
   }
  ],
- "index_web_pages_for_search": 1,
+ "index_web_pages_for_search": 0,
  "links": [],
  "modified": "2026-09-22 17:00:00.000000",
  "modified_by": "Administrator",
@@ -79,23 +212,9 @@
    "create": 1,
    "delete": 1,
    "email": 1,
-   "export": 1,
    "print": 1,
    "read": 1,
-   "report": 1,
    "role": "System Manager",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "create": 1,
-   "delete": 0,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Accounts User",
    "share": 1,
    "write": 1
   }
@@ -103,6 +222,5 @@
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
- "issingle": 1,
- "autoname": "Prompt"
+ "issingle": 1
 }

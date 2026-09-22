@@ -4,10 +4,10 @@ from frappe.utils import flt
 
 @frappe.whitelist()
 def hub_summary():
-    """Everything the operations console needs, in one round trip.
+    """Aggregates for the operations console.
 
-    Deliberately a single endpoint: six separate frappe.db.count calls from the
-    client would mean six requests before the page paints.
+    One endpoint rather than six client-side counts, so the page paints on a
+    single round trip.
     """
     frappe.has_permission("Customer", throw=True)
 

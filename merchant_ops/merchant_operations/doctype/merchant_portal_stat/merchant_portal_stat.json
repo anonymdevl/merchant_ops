@@ -1,0 +1,44 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-09-22 17:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "stat_value",
+  "stat_label"
+ ],
+ "fields": [
+  {
+   "fieldname": "stat_value",
+   "fieldtype": "Data",
+   "label": "Value",
+   "in_list_view": 1,
+   "reqd": 1,
+   "columns": 3,
+   "description": "Short. Two or three characters read best."
+  },
+  {
+   "fieldname": "stat_label",
+   "fieldtype": "Data",
+   "label": "Label",
+   "in_list_view": 1,
+   "reqd": 1,
+   "columns": 5,
+   "description": "Sits under the value in small caps."
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-09-22 17:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Merchant Operations",
+ "name": "Merchant Portal Stat",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1
+}

@@ -1,8 +1,8 @@
-"""Sample data for the demo instance.
+"""Sample data for demonstration instances.
 
-Run once:  bench --site <site> execute merchant_ops.demo.load
+    bench --site <site> execute merchant_ops.demo.load
 
-Idempotent: safe to run repeatedly. Never run against a production site.
+Idempotent. Not for production sites.
 """
 
 import random
