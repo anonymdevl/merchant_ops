@@ -17,11 +17,14 @@ add_to_apps_screen = [
     }
 ]
 
-# Portal branding. See public/css/portal.css.
-web_include_css = "/assets/merchant_ops/css/portal.css"
-web_include_js = "/assets/merchant_ops/js/portal.js"
+# Bundled so every build emits a content-hashed filename. Referenced by bundle
+# name, not path: Frappe resolves it through assets.json. Plain /assets/ paths
+# keep one URL forever, so a browser or proxy can serve a stale copy long after
+# a deploy.
+web_include_css = "portal.bundle.css"
+web_include_js = "portal.bundle.js"
 
-app_include_css = "/assets/merchant_ops/css/hub.css"
+app_include_css = "hub.bundle.css"
 
 fixtures = [
     {

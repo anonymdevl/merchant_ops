@@ -48,6 +48,11 @@ configured from Merchant Portal Settings. Applied through `web_include_css` and
 into the new layout rather than rebuilt, so its fields, CSRF token and submit
 handler are unchanged.
 
+Assets ship as Frappe bundles (`portal.bundle.scss`, `portal.bundle.js`,
+`hub.bundle.scss`) and are referenced by bundle name rather than path, so each
+build emits a content-hashed filename. A plain `/assets/` path never changes,
+which leaves browsers and proxies free to serve a stale copy after a deploy.
+
 ## Scope
 
 A demonstration of structure, not a finished platform. Deliberately absent:
@@ -72,9 +77,6 @@ in the app's own module. Upgrades remain a regression run.
 
 Text placed on brand colours is resolved server-side from WCAG relative
 luminance rather than picked by hand.
-
-`preview/` holds static harnesses for iterating on the login without a rebuild.
-They load the real stylesheet and script by relative path. Not installed.
 
 ## Brand assets
 
