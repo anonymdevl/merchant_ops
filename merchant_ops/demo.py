@@ -146,9 +146,20 @@ def _statements():
     demo can be re-run against an edited statement and the figures follow.
     """
     for processor, period, filename in STATEMENTS:
-        if frappe.db.exists("Processor Residual Import",
-                            {"processor": processor, "statement_period": period}):
+        existing = frappe.db.get_value(
+            "Processor Residual Import",
+            {"processor": processor, "statement_period": period},
+            ["name", "statement_file"], as_dict=True,
+        )
+        if existing and existing.statement_file:
             continue
+        if existing:
+            # A record from before the parser existed: its figures were typed
+            # in and are fiction. Skipping it leaves the screen a mix of parsed
+            # and invented numbers, which is worse than either.
+            frappe.delete_doc("Processor Residual Import", existing.name,
+                              force=True, ignore_permissions=True)
+            print(f"  removed {existing.name} — figures predated the parser")
 
         source = os.path.join(os.path.dirname(__file__), "public", "samples", filename)
         with open(source, "rb") as handle:

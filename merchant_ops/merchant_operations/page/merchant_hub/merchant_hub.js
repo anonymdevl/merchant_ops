@@ -7,6 +7,12 @@ frappe.pages["merchant-hub"].on_page_load = function (wrapper) {
 
 	const hub = new MerchantHub(page);
 	page.set_primary_action(__("Refresh"), () => hub.load(), "refresh");
+
+	// A Frappe page is constructed once and kept. Without this, routing away to
+	// a list, correcting a record and routing back shows the figures from
+	// whenever the page was first opened — which reads as the console being
+	// wrong rather than stale.
+	frappe.pages["merchant-hub"].on_page_show = () => hub.load();
 };
 
 class MerchantHub {
@@ -17,12 +23,27 @@ class MerchantHub {
 	}
 
 	load() {
+		if (this.loading) return;
+		this.loading = true;
 		this.$body.html('<div class="mo-loading">' + __("Loading…") + "</div>");
-		frappe.call({ method: "merchant_ops.api.hub_summary" }).then((r) => {
-			if (!r || !r.message) return;
-			this.data = r.message;
-			this.render();
-		});
+		frappe.call({ method: "merchant_ops.api.hub_summary" })
+			.then((r) => {
+				if (!r || !r.message) return;
+				this.data = r.message;
+				this.fetched_at = new Date();
+				this.render();
+			})
+			.always(() => {
+				this.loading = false;
+			});
+	}
+
+	stamp() {
+		// Says when the figures were read. Without it there is no way to tell a
+		// refresh that returned the same numbers from one that did not happen,
+		// and the honest first assumption is that the button is broken.
+		const t = this.fetched_at || new Date();
+		return t.toLocaleTimeString();
 	}
 
 	fmt(v) {
@@ -104,7 +125,7 @@ class MerchantHub {
 				</div>
 				<div class="mo-head-meta">
 					<div>${frappe.session.user_fullname || frappe.session.user}</div>
-					<div class="mo-muted">${now}</div>
+					<div class="mo-muted">${now} · ${__("updated")} ${this.stamp()}</div>
 				</div>
 			</div>
 		`);

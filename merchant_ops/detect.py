@@ -34,15 +34,21 @@ def run(only=None):
     if only:
         checks = {only: checks[only]}
 
-    summary = {}
+    summary, live = {}, set()
     for label, check in checks.items():
         try:
             findings = check()
             summary[label] = sum(1 for f in findings if _record(f))
+            live.update(_key(f) for f in findings)
         except Exception:
             frappe.log_error(title=f"merchant_ops sweep: {label} failed")
             summary[label] = "error"
+            # A check that failed proves nothing about its findings, so its
+            # existing exceptions are left alone rather than retracted on the
+            # strength of an empty result.
+            live.update(_open_keys(label_to_type(label)))
 
+    summary["retracted"] = _retract(live, checks)
     frappe.db.commit()
     frappe.logger("merchant_ops").info(f"leakage sweep {nowdate()}: {summary}")
     return summary
@@ -258,6 +264,70 @@ def unmapped_mid():
                       f"{entry.statement_period} statement do not map to a merchant.",
         })
     return findings
+
+
+# --- retraction ---------------------------------------------------------
+
+TYPE_BY_CHECK = {
+    "rate_mismatch": "Rate Mismatch",
+    "unapproved_rate": "Unapproved Rate",
+    "unbilled_subscription": "Unbilled Subscription",
+    "missing_residual": "Missing Residual",
+    "unmapped_mid": "Unmapped MID",
+}
+
+
+def label_to_type(label):
+    return TYPE_BY_CHECK.get(label)
+
+
+def _key(finding):
+    return (finding["exception_type"], finding["source_doctype"], finding["source_document"])
+
+
+def _open_keys(exception_type):
+    if not exception_type:
+        return set()
+    rows = frappe.get_all("Revenue Exception", filters={
+        "exception_type": exception_type, "status": ["!=", "Resolved"],
+    }, fields=["exception_type", "source_doctype", "source_document"])
+    return {(r.exception_type, r.source_doctype, r.source_document) for r in rows}
+
+
+def _retract(live, checks):
+    """Closes open findings the sweep no longer reproduces.
+
+    Without this the queue only ever grows. Someone corrects the invoice, the
+    exception stays open, and within a fortnight the count on the console is a
+    historical tally rather than a worklist — at which point people stop
+    looking at it, which is the failure mode this whole feature exists to
+    avoid.
+
+    Only types this run actually evaluated are eligible, so running a single
+    check from the console cannot retract another check's findings.
+    """
+    eligible = {TYPE_BY_CHECK[label] for label in checks if label in TYPE_BY_CHECK}
+    if not eligible:
+        return 0
+
+    open_rows = frappe.get_all("Revenue Exception", filters={
+        "exception_type": ["in", list(eligible)], "status": ["!=", "Resolved"],
+    }, fields=["name", "exception_type", "source_doctype", "source_document"])
+
+    closed = 0
+    for row in open_rows:
+        if (row.exception_type, row.source_doctype, row.source_document) in live:
+            continue
+        doc = frappe.get_doc("Revenue Exception", row.name)
+        doc.status = "Resolved"
+        doc.resolution_note = (
+            f"Closed automatically on {nowdate()}: the sweep no longer finds this "
+            f"discrepancy. The underlying record was corrected."
+        )
+        doc.save(ignore_permissions=True)
+        closed += 1
+
+    return closed
 
 
 # --- writing ------------------------------------------------------------
