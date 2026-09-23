@@ -42,9 +42,10 @@
    "fieldtype": "Link",
    "label": "Merchant",
    "options": "Customer",
-   "reqd": 1,
+   "reqd": 0,
    "in_list_view": 1,
-   "in_standard_filter": 1
+   "in_standard_filter": 1,
+   "description": "Blank where the finding has no merchant yet \u2014 an unmapped MID is revenue that arrived with no owner, and a settlement variance sits against a deposit rather than an account."
   },
   {
    "fieldname": "exception_type",

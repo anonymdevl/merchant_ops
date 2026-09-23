@@ -324,6 +324,11 @@ def _retract(live, checks):
             f"Closed automatically on {nowdate()}: the sweep no longer finds this "
             f"discrepancy. The underlying record was corrected."
         )
+        # Closing a finding must not be blocked by the finding's own contents.
+        # Records raised before a field became mandatory, or by a check that
+        # legitimately has no merchant, would otherwise be impossible to retire
+        # and would sit in the queue forever.
+        doc.flags.ignore_mandatory = True
         doc.save(ignore_permissions=True)
         closed += 1
 

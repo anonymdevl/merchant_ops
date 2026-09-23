@@ -187,6 +187,7 @@ class ProcessorResidualImport(Document):
                 f"Closed automatically: the {self.processor} {self.statement_period} "
                 f"statement no longer carries unmapped rows."
             )
+            doc.flags.ignore_mandatory = True
             doc.save(ignore_permissions=True)
 
     def _has_open_exception(self):
