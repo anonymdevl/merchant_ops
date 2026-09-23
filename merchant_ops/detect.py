@@ -26,6 +26,7 @@ def run(only=None):
     """Scheduler entry point. Returns a per-check count so the log is readable."""
     checks = {
         "rate_mismatch": rate_mismatch,
+        "unapproved_rate": unapproved_rate,
         "unbilled_subscription": unbilled_subscription,
         "missing_residual": missing_residual,
         "unmapped_mid": unmapped_mid,
@@ -85,6 +86,45 @@ def rate_mismatch():
             "source_document": line.invoice,
             "detail": f"{line.item_code} billed at {flt(line.rate):,.2f} against an approved "
                       f"price of {flt(line.price_list_rate):,.2f} on {line.posting_date}.",
+        })
+    return findings
+
+
+def unapproved_rate():
+    """Invoices billed against a price nobody approved.
+
+    Rate mismatch catches billing below an approved price. This catches the
+    other direction: a price that was never approved in the first place, which
+    is how a discount granted in a corridor becomes permanent. The control
+    belongs upstream of the invoice, but the invoice is where it becomes
+    measurable.
+    """
+    lines = frappe.db.sql("""
+        SELECT si.name AS invoice, si.customer, si.posting_date,
+               sii.item_code, sii.rate, sii.amount,
+               ip.name AS price, ip.approval_status
+        FROM `tabSales Invoice Item` sii
+        JOIN `tabSales Invoice` si ON si.name = sii.parent
+        JOIN `tabItem Price` ip
+             ON ip.item_code = sii.item_code
+            AND ip.price_list = si.selling_price_list
+            AND ip.selling = 1
+        WHERE si.docstatus = 1
+          AND IFNULL(ip.approval_status, 'Draft') != 'Approved'
+    """, as_dict=True)
+
+    findings = []
+    for line in lines:
+        findings.append({
+            "exception_type": "Unapproved Rate",
+            "merchant": line.customer,
+            "expected_amount": flt(line.amount),
+            "actual_amount": flt(line.amount),
+            "source_doctype": "Sales Invoice",
+            "source_document": line.invoice,
+            "detail": f"{line.item_code} was billed on {line.posting_date} against price "
+                      f"{line.price}, which is {line.approval_status or 'Draft'} rather than "
+                      f"Approved. The rate may be correct; it is not governed.",
         })
     return findings
 

@@ -13,7 +13,7 @@ import os
 import random
 
 import frappe
-from frappe.utils import add_days, nowdate
+from frappe.utils import add_days, flt, nowdate
 from frappe.utils.file_manager import save_file
 
 MERCHANTS = [
@@ -37,8 +37,84 @@ STATEMENTS = [
 def load():
     _merchants()
     _statements()
+    _deposits()
+    _collection_history()
     frappe.db.commit()
     print("Demo data loaded. Run merchant_ops.detect.run to populate the exception queue.")
+
+
+def _deposits():
+    """Two deposits: one that ties out, one that does not.
+
+    The clean one proves the match works. The short one is the interesting
+    document — the processor paid 340.00 less than its own statement says,
+    which is the case a finance team finds three days into a month-end.
+    """
+    if frappe.db.count("Merchant Deposit"):
+        return
+
+    fiserv = frappe.db.get_value("Processor Residual Import",
+                                 {"processor": "Fiserv", "statement_period": "2026-08"},
+                                 ["name", "net_residual"], as_dict=True)
+    tsys = frappe.db.get_value("Processor Residual Import",
+                               {"processor": "TSYS", "statement_period": "2026-08"},
+                               ["name", "net_residual"], as_dict=True)
+    if not (fiserv and tsys):
+        return
+
+    for processor, source, shortfall, reference in [
+        ("Fiserv", fiserv, 0.00, "ACH-88412-0908"),
+        ("TSYS", tsys, 340.00, "ACH-90117-0911"),
+    ]:
+        allocated = flt(source.net_residual) - shortfall
+        doc = frappe.get_doc({
+            "doctype": "Merchant Deposit",
+            "processor": processor,
+            "deposit_date": add_days(nowdate(), -12),
+            "bank_reference": reference,
+            "deposit_amount": allocated,
+            "allocations": [{"residual_import": source.name, "allocated_amount": allocated}],
+        })
+        doc.insert(ignore_permissions=True)
+        print(f"  {processor} deposit {doc.name}: {doc.status}")
+
+
+def _collection_history():
+    """Three failed collections, one per return-code family.
+
+    R01 is retriable and produces a scheduled re-presentment. R02 and R07 are
+    not, and each raises an exception instead. Side by side they demonstrate
+    that the platform reads the code rather than looping.
+    """
+    if frappe.db.count("Payment Attempt"):
+        return
+
+    invoices = frappe.get_all(
+        "Sales Invoice",
+        filters={"docstatus": 1, "outstanding_amount": [">", 0]},
+        fields=["name", "customer", "outstanding_amount", "currency"],
+        order_by="due_date asc", limit=3,
+    )
+
+    for invoice, code in zip(invoices, ["R01", "R02", "R07"]):
+        attempt = frappe.get_doc({
+            "doctype": "Payment Attempt",
+            "merchant": invoice.customer,
+            "sales_invoice": invoice.name,
+            "status": "Scheduled",
+            "method": "ACH",
+            "amount": flt(invoice.outstanding_amount),
+            "currency": invoice.currency,
+            "scheduled_on": add_days(nowdate(), -6),
+        }).insert(ignore_permissions=True)
+
+        attempt.status = "Failed"
+        attempt.attempted_on = add_days(nowdate(), -6)
+        attempt.return_code = code
+        attempt.gateway_reference = f"DEMO-{attempt.idempotency_key[:10]}"
+        attempt.save(ignore_permissions=True)
+        print(f"  {invoice.name}: {code} — "
+              f"{'retry scheduled' if attempt.retriable else 'escalated to collections'}")
 
 
 def _merchants():

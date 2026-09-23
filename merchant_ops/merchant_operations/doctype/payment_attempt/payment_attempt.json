@@ -1,0 +1,226 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "naming_series:",
+ "creation": "2026-09-23 09:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "merchant",
+  "sales_invoice",
+  "attempt_no",
+  "cb0",
+  "status",
+  "method",
+  "scheduled_on",
+  "attempted_on",
+  "sb1",
+  "amount",
+  "currency",
+  "cb1",
+  "gateway_reference",
+  "idempotency_key",
+  "sb2",
+  "return_code",
+  "return_label",
+  "return_family",
+  "cb2",
+  "retriable",
+  "next_retry_on",
+  "mandate_disabled",
+  "sb3",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "PAY-ATT-.#####",
+   "reqd": 1,
+   "hidden": 1,
+   "default": "PAY-ATT-.#####"
+  },
+  {
+   "fieldname": "merchant",
+   "fieldtype": "Link",
+   "options": "Customer",
+   "label": "Merchant",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "sales_invoice",
+   "fieldtype": "Link",
+   "options": "Sales Invoice",
+   "label": "Sales Invoice",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "attempt_no",
+   "fieldtype": "Int",
+   "label": "Attempt No",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "cb0",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Scheduled\nSucceeded\nFailed\nAbandoned",
+   "default": "Scheduled",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "method",
+   "fieldtype": "Select",
+   "label": "Method",
+   "options": "ACH\nCard",
+   "default": "ACH"
+  },
+  {
+   "fieldname": "scheduled_on",
+   "fieldtype": "Date",
+   "label": "Scheduled On"
+  },
+  {
+   "fieldname": "attempted_on",
+   "fieldtype": "Date",
+   "label": "Attempted On"
+  },
+  {
+   "fieldname": "sb1",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Amount",
+   "options": "currency",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "options": "Currency",
+   "label": "Currency",
+   "print_hide": 1
+  },
+  {
+   "fieldname": "cb1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "gateway_reference",
+   "fieldtype": "Data",
+   "label": "Gateway Reference",
+   "read_only": 1
+  },
+  {
+   "fieldname": "idempotency_key",
+   "fieldtype": "Data",
+   "label": "Idempotency Key",
+   "read_only": 1,
+   "unique": 1,
+   "description": "Identifies this attempt to the gateway. The one control that stops a repeated instruction moving money twice."
+  },
+  {
+   "fieldname": "sb2",
+   "fieldtype": "Section Break",
+   "label": "Outcome",
+   "depends_on": "eval:doc.status=='Failed'"
+  },
+  {
+   "fieldname": "return_code",
+   "fieldtype": "Select",
+   "label": "Return Code",
+   "options": "\nR01\nR09\nR02\nR03\nR04\nR07\nR08\nR10\nR11\nR16\nR20\nR29"
+  },
+  {
+   "fieldname": "return_label",
+   "fieldtype": "Data",
+   "label": "Meaning",
+   "read_only": 1
+  },
+  {
+   "fieldname": "return_family",
+   "fieldtype": "Data",
+   "label": "Family",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "retriable",
+   "fieldtype": "Check",
+   "label": "Re-presentment Permitted",
+   "read_only": 1
+  },
+  {
+   "fieldname": "next_retry_on",
+   "fieldtype": "Date",
+   "label": "Next Retry On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "mandate_disabled",
+   "fieldtype": "Check",
+   "label": "Mandate Disabled",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb3",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-23 09:00:00.000000",
+ "module": "Merchant Operations",
+ "name": "Payment Attempt",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "Accounts User",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "email": 1,
+   "share": 1,
+   "print": 1
+  },
+  {
+   "role": "Accounts Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "email": 1,
+   "share": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "merchant",
+ "track_changes": 1
+}

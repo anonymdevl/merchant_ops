@@ -31,7 +31,7 @@ add_to_apps_screen = [
 # and hooks.py is imported on every request.
 #
 # BUMP THIS whenever portal.css, portal.js or hub.css changes.
-ASSET_VERSION = "13"
+ASSET_VERSION = "15"
 
 web_include_css = f"/assets/merchant_ops/css/portal.css?v={ASSET_VERSION}"
 web_include_js = f"/assets/merchant_ops/js/portal.js?v={ASSET_VERSION}"
@@ -41,7 +41,8 @@ app_include_css = f"/assets/merchant_ops/css/hub.css?v={ASSET_VERSION}"
 fixtures = [
     {
         "dt": "Custom Field",
-        "filters": [["dt", "=", "Customer"], ["module", "in", [None, "Merchant Operations"]]],
+        "filters": [["dt", "in", ["Customer", "Item Price"]],
+                    ["module", "in", [None, "Merchant Operations"]]],
     },
     {
         "dt": "Property Setter",
@@ -50,13 +51,34 @@ fixtures = [
 ]
 
 after_install = "merchant_ops.install.after_install"
+after_migrate = "merchant_ops.install.after_migrate"
 
-# The sweep is the only thing in this app that runs unattended. It is read-only
-# against ERPNext documents: it compares layers and records what disagrees, and
-# never amends an invoice, a payment or a ledger entry. Corrections stay a human
-# decision made from the exception record.
+# What runs unattended, and what it is allowed to do.
+#
+# The detector is read-only against ERPNext documents: it compares layers and
+# records what disagrees, and never amends an invoice, a payment or a ledger
+# entry. The collection jobs do write — a Payment Attempt, a Dunning — but they
+# stop short of the two consequential acts. They never move money (the gateway
+# does that, on an instruction carrying an idempotency key) and they never
+# restrict a merchant; restriction is proposed as an exception and a person
+# decides. Everything here re-runs safely: each job checks for its own prior
+# output before creating anything.
 scheduler_events = {
+    "daily": [
+        # Present debits that have come due, then move overdue invoices up the
+        # ladder. Order matters: a collection that succeeds this morning should
+        # not also receive a dunning notice this afternoon.
+        "merchant_ops.collections.run_autopay",
+        "merchant_ops.collections.run_retries",
+        "merchant_ops.collections.escalate_dunning",
+    ],
     "daily_long": [
         "merchant_ops.detect.run",
     ],
+}
+
+doc_events = {
+    "Item Price": {
+        "validate": "merchant_ops.install.stamp_approval",
+    },
 }

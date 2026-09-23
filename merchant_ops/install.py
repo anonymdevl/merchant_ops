@@ -2,6 +2,43 @@ import frappe
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 
 
+# Pricing governance. ERPNext holds the rate but has no opinion about who
+# agreed it, which is the gap the leakage engine exists to catch further down
+# the chain. Approval state on the price itself moves the control upstream of
+# the invoice, where it is cheap.
+PRICING_FIELDS = {
+    "Item Price": [
+        {
+            "fieldname": "mo_governance_section", "label": "Governance",
+            "fieldtype": "Section Break", "insert_after": "price_list_rate",
+        },
+        {
+            "fieldname": "approval_status", "label": "Approval Status",
+            "fieldtype": "Select", "options": "Draft\nApproved\nRejected",
+            "default": "Draft", "insert_after": "mo_governance_section",
+            "in_list_view": 1, "in_standard_filter": 1, "reqd": 1,
+        },
+        {
+            "fieldname": "off_card_reason", "label": "Reason for Off-Card Rate",
+            "fieldtype": "Small Text", "insert_after": "approval_status",
+            "depends_on": "eval:doc.approval_status != 'Draft'",
+        },
+        {
+            "fieldname": "mo_governance_col", "fieldtype": "Column Break",
+            "insert_after": "off_card_reason",
+        },
+        {
+            "fieldname": "approved_by", "label": "Approved By",
+            "fieldtype": "Link", "options": "User", "read_only": 1,
+            "insert_after": "mo_governance_col",
+        },
+        {
+            "fieldname": "approved_on", "label": "Approved On",
+            "fieldtype": "Datetime", "read_only": 1, "insert_after": "approved_by",
+        },
+    ]
+}
+
 CUSTOMER_FIELDS = {
     "Customer": [
         {
@@ -48,9 +85,26 @@ CUSTOMER_FIELDS = {
 
 def after_install():
     create_custom_fields(CUSTOMER_FIELDS, update=True)
+    create_custom_fields(PRICING_FIELDS, update=True)
     _label_customer_as_merchant()
+    _build_sidebar()
     frappe.db.commit()
-    print("merchant_ops: custom fields installed on Customer")
+    print("merchant_ops: custom fields installed on Customer and Item Price")
+
+
+def after_migrate():
+    """Frappe regenerates the sidebar when the workspace changes, dropping our
+    icons and drill-downs. Re-applying after every migrate is what makes them
+    stick."""
+    _build_sidebar()
+
+
+def _build_sidebar():
+    from merchant_ops.sidebar import build
+    try:
+        build()
+    except Exception:
+        frappe.log_error(title="merchant_ops: could not build the sidebar")
 
 
 def _label_customer_as_merchant():
@@ -66,3 +120,17 @@ def _label_customer_as_merchant():
     except Exception:
         # DocType.label is not present on every Frappe version; cosmetic only.
         frappe.log_error(title="merchant_ops: could not relabel Customer")
+
+
+def stamp_approval(doc, method=None):
+    """Records who approved a rate and when, on the Item Price itself.
+
+    Without this the approval is a dropdown anyone can set and nobody can audit,
+    which is worse than no control at all because it looks like one.
+    """
+    if doc.get("approval_status") == "Approved" and not doc.get("approved_by"):
+        doc.approved_by = frappe.session.user
+        doc.approved_on = frappe.utils.now()
+    elif doc.get("approval_status") != "Approved":
+        doc.approved_by = None
+        doc.approved_on = None

@@ -34,6 +34,16 @@ def hub_summary():
         FROM `tabProcessor Residual Import`
     """)[0][0]
 
+    failed_value = frappe.db.sql("""
+        SELECT COALESCE(SUM(amount), 0) FROM `tabPayment Attempt`
+        WHERE status = 'Failed' AND retriable = 0
+    """)[0][0]
+
+    unreconciled = frappe.db.sql("""
+        SELECT COALESCE(SUM(ABS(unallocated)), 0) FROM `tabMerchant Deposit`
+        WHERE status IN ('Variance', 'Unmatched')
+    """)[0][0]
+
     return {
         "currency": frappe.defaults.get_global_default("currency") or "USD",
         "kpi": {
@@ -45,6 +55,13 @@ def hub_summary():
             "value_at_risk": flt(leakage),
             "residual": flt(residual),
             "merchants": frappe.db.count("Customer"),
+            "failed_collections": frappe.db.count("Payment Attempt",
+                                                  {"status": "Failed", "retriable": 0}),
+            "failed_value": flt(failed_value),
+            "retries_scheduled": frappe.db.count("Payment Attempt", {"status": "Scheduled"}),
+            "deposits_unreconciled": frappe.db.count("Merchant Deposit",
+                                                     {"status": ["in", ["Variance", "Unmatched"]]}),
+            "unreconciled_value": flt(unreconciled),
         },
         "top_exceptions": frappe.db.sql("""
             SELECT name, merchant, exception_type, variance, detected_on, status,
@@ -59,6 +76,21 @@ def hub_summary():
             FROM `tabProcessor Residual Import`
             WHERE rows_unmapped > 0
             ORDER BY rows_unmapped DESC
+            LIMIT 5
+        """, as_dict=True),
+        "recovery": frappe.db.sql("""
+            SELECT name, merchant, sales_invoice, attempt_no, amount,
+                   return_code, return_label, retriable, next_retry_on
+            FROM `tabPayment Attempt`
+            WHERE status = 'Failed'
+            ORDER BY retriable ASC, amount DESC
+            LIMIT 5
+        """, as_dict=True),
+        "deposits": frappe.db.sql("""
+            SELECT name, processor, deposit_date, deposit_amount, unallocated, status
+            FROM `tabMerchant Deposit`
+            WHERE status IN ('Variance', 'Unmatched')
+            ORDER BY ABS(unallocated) DESC
             LIMIT 5
         """, as_dict=True),
         "watchlist": frappe.db.sql("""
