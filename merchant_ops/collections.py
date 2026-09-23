@@ -21,8 +21,15 @@ from frappe.utils import add_days, flt, getdate, nowdate
 
 from merchant_ops import ach
 
-# The ladder. Each level names the Dunning Type that carries its fee and
-# interest, and the age at which it applies.
+# The ladder, by age in days. The labels are the *value* of Dunning Type's
+# `dunning_type` field, not the document name: ERPNext names those records with
+# the company abbreviation appended, so "First Notice" is stored as
+# "First Notice - MPS". Resolving the name at runtime keeps this list readable
+# and keeps the app working on a site with a different abbreviation.
+#
+# A level with no matching Dunning Type is skipped rather than raising. The
+# ladder a client configures is theirs, and a missing rung must not stop the
+# rungs below it from being worked.
 LADDER = [
     (7, "First Notice"),
     (21, "Second Notice"),
@@ -145,24 +152,47 @@ def escalate_dunning():
     what makes it safe to schedule daily.
     """
     overdue = frappe.db.sql("""
-        SELECT name, customer, due_date, DATEDIFF(CURDATE(), due_date) AS age
+        SELECT name, customer, company, due_date, DATEDIFF(CURDATE(), due_date) AS age
         FROM `tabSales Invoice`
         WHERE docstatus = 1 AND outstanding_amount > 0 AND due_date < CURDATE()
     """, as_dict=True)
 
-    raised, restricted = 0, 0
-    for invoice in overdue:
-        level = _level_for(invoice.age)
-        if level and not _has_dunning(invoice.name, level):
-            _raise_dunning(invoice, level)
-            raised += 1
+    raised, restricted, missing = 0, 0, set()
 
-        if invoice.age >= RESTRICT_AFTER_DAYS:
-            if _flag_for_restriction(invoice):
-                restricted += 1
+    for invoice in overdue:
+        label = _level_for(invoice.age)
+        if label:
+            dunning_type = _resolve_type(label, invoice.company)
+            if not dunning_type:
+                missing.add(label)
+            elif not _has_dunning(invoice.name, dunning_type):
+                try:
+                    _raise_dunning(invoice, dunning_type)
+                    raised += 1
+                except Exception:
+                    # One merchant's notice failing must not stop the rest of
+                    # the ladder being worked.
+                    frappe.log_error(title=f"merchant_ops: dunning failed for {invoice.name}")
+
+        if invoice.age >= RESTRICT_AFTER_DAYS and _flag_for_restriction(invoice):
+            restricted += 1
 
     frappe.db.commit()
-    return {"dunnings_raised": raised, "flagged_for_restriction": restricted}
+    result = {"dunnings_raised": raised, "flagged_for_restriction": restricted}
+    if missing:
+        result["missing_dunning_types"] = sorted(missing)
+    return result
+
+
+def _resolve_type(label, company):
+    """Finds the Dunning Type record for a ladder label.
+
+    Matches on the field rather than the name, and prefers the one belonging to
+    the invoice's company so a multi-company site raises the right notice with
+    the right fee and interest account.
+    """
+    name = frappe.db.get_value("Dunning Type", {"dunning_type": label, "company": company})
+    return name or frappe.db.get_value("Dunning Type", {"dunning_type": label})
 
 
 def _level_for(age):
@@ -187,7 +217,9 @@ def _raise_dunning(invoice, dunning_type):
     doc.customer = invoice.customer
     doc.dunning_type = dunning_type
     doc.posting_date = nowdate()
-    doc.company = frappe.defaults.get_user_default("Company")
+    # Taken from the invoice rather than a user default, because a scheduled
+    # job has no user and the default would be empty.
+    doc.company = invoice.company
     doc.append("overdue_payments", {"sales_invoice": invoice.name})
     doc.insert(ignore_permissions=True)
 
