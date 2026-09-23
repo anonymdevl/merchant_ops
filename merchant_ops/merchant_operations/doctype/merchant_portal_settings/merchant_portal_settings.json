@@ -64,7 +64,7 @@
    "fieldname": "brand_logo_reversed",
    "fieldtype": "Attach Image",
    "label": "Logo (for dark backgrounds)",
-   "description": "Full lockup for DARK surfaces: the login brand panel. Use the white or reversed version. Left empty this falls back to the light logo, which on a dark panel usually means an invisible one."
+   "description": "Full lockup for DARK surfaces: the login brand panel. Use the white or reversed version. Left empty this falls back to the light logo, which on a dark panel usually means an invisible one. If the file 404s, a monogram of the brand name is drawn instead of a broken image."
   },
   {
    "fieldname": "brand_logo_icon",
@@ -88,13 +88,13 @@
    "fieldtype": "Color",
    "label": "Accent Colour",
    "default": "#2E86AB",
-   "description": "Links, the focus ring, and the button on hover. Left empty it follows the primary colour, so the page looks exactly as it does today until this is set. Text placed on it is chosen automatically, black or white, whichever stays readable."
+   "description": "The sign-in button, links and the focus ring. Left empty it follows the primary colour, so a site that has never set this looks exactly as it did before the field existed. Text placed on it is chosen automatically, black or white, by relative luminance."
   },
   {
    "fieldname": "login_background",
    "fieldtype": "Attach Image",
    "label": "Login Background",
-   "description": "Photograph or texture behind the brand panel. It is darkened automatically so the headline stays legible over anything. Left empty the panel uses the primary colour alone, which is the safer choice."
+   "description": "Photograph or texture behind the brand panel. Darkened automatically so the headline stays legible over anything, and the decorative rings are suppressed so the two do not fight. Left empty the panel uses the primary colour alone."
   },
   {
    "fieldname": "layout_section",
@@ -107,7 +107,7 @@
    "label": "Layout",
    "options": "Split\nSplit - Brand Right\nCentred",
    "default": "Split",
-   "description": "Split puts the brand panel beside the form. Centred makes the brand a full-screen backdrop with the form on a card. Every layout uses the same markup and moves Frappe's own form rather than rebuilding it, so none of them can break the sign-in itself."
+   "description": "Split puts the brand panel beside the form. Centred makes the brand a full-screen backdrop with the form on a card. Every layout is CSS over Frappe's own markup — the sign-in form is never moved or rebuilt, so no layout can break authentication."
   },
   {
    "fieldname": "login_headline",
@@ -132,14 +132,14 @@
    "fieldtype": "Data",
    "label": "Form Note",
    "default": "Sign in to the merchant operations console.",
-   "description": "Sits directly under the word Login, above the first field."
+   "description": "Replaces Frappe's own \"Welcome! Please sign in to continue.\" beneath the heading. Left empty, Frappe's wording stands."
   },
   {
    "fieldname": "support_note",
    "fieldtype": "Small Text",
    "label": "Support Note",
    "default": "Trouble signing in? Contact your account manager.",
-   "description": "Footer under the form. The place to put a desk number or an internal help link."
+   "description": "Footer under the form. Shown on every step, including forgot-password. The place for a desk number or an internal help link."
   },
   {
    "fieldname": "security_note",
@@ -159,7 +159,7 @@
    "fieldtype": "Check",
    "label": "Show Stat Strip",
    "default": "1",
-   "description": "A row of figures along the foot of the brand panel. Hidden entirely when unticked or when no rows are set."
+   "description": "A row of figures along the foot of the brand panel. Hidden entirely when unticked, when no rows are set, and on screens under 900px wide."
   },
   {
    "fieldname": "stats",

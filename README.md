@@ -44,14 +44,24 @@ serves the whole page in one call.
 
 **Portal login** in three layouts — split, split with brand right, and centred —
 configured from Merchant Portal Settings. Applied through `web_include_css` and
-`web_include_js`; `www/login.html` is not overridden. Frappe's form is moved
-into the new layout rather than rebuilt, so its fields, CSRF token and submit
-handler are unchanged.
+`web_include_js`; `www/login.html` is not overridden.
 
-Assets ship as Frappe bundles (`portal.bundle.scss`, `portal.bundle.js`,
-`hub.bundle.scss`) and are referenced by bundle name rather than path, so each
-build emits a content-hashed filename. A plain `/assets/` path never changes,
-which leaves browsers and proxies free to serve a stale copy after a deploy.
+The only new DOM is `.mo-brand-panel`, a sibling inserted at the top of
+`.page_content` that contains no form control. Frappe renders one section at a
+time, so the visible section — login, signup, forgot or email link — becomes
+the pane beside the panel on its own. Nothing is moved and no credential is
+touched, so authentication behaviour is untouched by any layout, and a class
+renamed in a future Frappe degrades the page to Frappe's stock layout rather
+than breaking it.
+
+Brand colours are cached in `localStorage` and applied before the network
+answers, so a return visit is branded without a flash.
+
+Assets are referenced by plain `/assets/` path with a `?v=` suffix from
+`ASSET_VERSION` in `hooks.py`. Frappe's own bundles carry a content hash, so a
+new build is a new URL; these do not, and without the query string a browser
+will serve a stale copy through repeated hard reloads. **Bump `ASSET_VERSION`
+whenever `portal.css`, `portal.js` or `hub.css` changes.**
 
 ## Scope
 

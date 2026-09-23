@@ -1,0 +1,377 @@
+/* Login, forgot-password and reset pages.
+ *
+ * The markup this re-lays-out is Frappe's own:
+ *
+ *   #page-login  .page_content  .for-login  .login-content.page-card
+ *   .page-card-head > img.app-logo + h4 + p.page-card-subtitle
+ *   form.form-signin > .page-card-body > .form-group  +  .page-card-actions
+ *
+ * Note the absence of tag names. A selector qualified by tag is a second way
+ * to be wrong for no benefit, and a CSS rule that matches nothing fails
+ * silently — which is the hardest kind of mistake to see.
+ *
+ * Frappe renders ONE section at a time, so the visible section is the only
+ * flex item beside .mo-brand-panel and becomes the form pane on its own. That
+ * is why switching to forgot-password or the email-link flow keeps the layout
+ * without anything being moved.
+ *
+ * The one piece of new DOM is .mo-brand-panel, added by portal.js, which
+ * contains no form control. If a future Frappe renames a class the page
+ * degrades to Frappe's stock layout rather than breaking.
+ *
+ * Colours arrive as custom properties set on :root by portal.js from Merchant
+ * Portal Settings. The values below are only fallbacks.
+ */
+
+:root {
+	--mo-primary: #0e2a38;
+	/* The accent trails the primary until one is set, so a site that has never
+	 * heard of this setting looks exactly as it did before it existed. The ink
+	 * is chosen for contrast by portal.js, never picked by hand. */
+	--mo-accent: var(--mo-primary);
+	--mo-on-accent: #ffffff;
+	--mo-on-primary: #ffffff;
+	--mo-surface: #ffffff;
+	--mo-text: #14181c;
+	--mo-muted: #6b7a85;
+	--mo-line: #e2e8ec;
+	--mo-field: #f7f9fa;
+}
+
+/* ---------------------------------------------------------------- shell -- */
+
+#page-login {
+	background: var(--mo-surface);
+	position: relative;
+	z-index: 0;
+}
+
+#page-login .page-content-wrapper,
+#page-login .container {
+	max-width: none;
+	width: auto;
+	padding: 0;
+	margin: 0;
+}
+
+#page-login .navbar,
+#page-login header.navbar,
+#page-login .web-footer,
+#page-login footer {
+	display: none;
+}
+
+#page-login .page_content {
+	display: flex;
+	min-height: 100vh;
+	align-items: stretch;
+}
+
+/* Before the panel lands, the single visible pane is the only flex item and
+ * would grow to the full width. Holding it off the brand side for exactly as
+ * long as the panel is missing keeps the page from jumping when JS arrives. */
+#page-login .page_content:not(:has(.mo-brand-panel)) > * {
+	margin-left: 46%;
+}
+
+/* ---------------------------------------------------------- brand panel -- */
+
+.mo-brand-panel {
+	flex: 1 1 46%;
+	/* A flex item refuses to shrink below its min-content width without this. */
+	min-width: 0;
+	position: relative;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	gap: 28px;
+	padding: 48px 52px;
+	background: var(--mo-primary);
+	color: var(--mo-on-primary);
+	background-size: cover;
+	background-position: center;
+}
+
+/* Meridian rings. Decorative; they must never compete with the headline. */
+.mo-brand-panel::after,
+.mo-brand-panel::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	border-radius: 50%;
+	pointer-events: none;
+	border: 1px solid rgba(255, 255, 255, 0.065);
+}
+.mo-brand-panel::after {
+	right: -22%;
+	width: 560px;
+	height: 560px;
+	margin-top: -280px;
+	box-shadow:
+		inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+		0 0 0 60px rgba(255, 255, 255, 0.018);
+}
+.mo-brand-panel::before {
+	right: -22%;
+	width: 200px;
+	height: 560px;
+	margin-top: -280px;
+	margin-right: 180px;
+	border-color: rgba(255, 255, 255, 0.05);
+}
+.mo-brand-panel[data-has-bg]::after,
+.mo-brand-panel[data-has-bg]::before {
+	display: none;
+}
+
+.mo-brand-mark,
+.mo-brand-body,
+.mo-brand-foot {
+	position: relative;
+	z-index: 1;
+}
+
+.mo-brand-mark img {
+	height: 46px;
+	display: block;
+	max-width: 100%;
+}
+.mo-brand-initials {
+	width: 52px;
+	height: 52px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 2px solid currentColor;
+	border-radius: 50%;
+	font-size: 17px;
+	font-weight: 600;
+	letter-spacing: 1px;
+}
+
+.mo-brand-body { max-width: 430px; }
+.mo-brand-head {
+	font-size: 29px;
+	line-height: 1.28;
+	font-weight: 500;
+	letter-spacing: -0.5px;
+	margin: 0 0 14px;
+	/* A line break typed into the setting is a line break on the page. */
+	white-space: pre-line;
+}
+.mo-brand-sub {
+	font-size: 14.5px;
+	line-height: 1.6;
+	opacity: 0.74;
+	margin: 0;
+}
+
+.mo-brand-foot {
+	display: flex;
+	gap: 40px;
+	flex-wrap: wrap;
+	padding-top: 24px;
+	border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+.mo-brand-foot:empty { display: none; }
+.mo-stat-value { font-size: 19px; font-weight: 600; letter-spacing: -0.2px; }
+.mo-stat-label {
+	font-size: 10px;
+	letter-spacing: 1.5px;
+	text-transform: uppercase;
+	opacity: 0.64;
+	margin-top: 4px;
+}
+
+/* ------------------------------------------------------------ form pane -- */
+
+#page-login .page_content > *:not(.mo-brand-panel) {
+	flex: 1 1 54%;
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 40px 32px;
+	background: var(--mo-surface);
+}
+
+#page-login .login-content,
+#page-login .page-card {
+	width: 100%;
+	max-width: 372px;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+	padding: 0;
+	margin: 0;
+	background: transparent;
+}
+
+/* The brand panel already carries the logo. */
+#page-login .page-card-head img.app-logo { display: none; }
+
+#page-login .page-card-head { margin-bottom: 22px; }
+#page-login .page-card-head h4,
+#page-login .page-card-head-text {
+	font-size: 23px;
+	font-weight: 600;
+	letter-spacing: -0.3px;
+	color: var(--mo-text);
+	margin: 0 0 6px;
+}
+#page-login .page-card-subtitle {
+	font-size: 13.5px;
+	color: var(--mo-muted);
+	margin: 0;
+}
+
+#page-login .form-group { margin-bottom: 16px; }
+#page-login .control-label,
+#page-login label {
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.9px;
+	text-transform: uppercase;
+	color: var(--mo-muted);
+	margin-bottom: 6px;
+}
+
+#page-login .form-control {
+	height: 44px;
+	border: 1px solid var(--mo-line);
+	border-radius: 5px;
+	background: var(--mo-field);
+	font-size: 14.5px;
+	padding: 0 13px;
+	color: var(--mo-text);
+	box-shadow: none;
+	transition: border-color 0.13s ease, box-shadow 0.13s ease, background 0.13s ease;
+}
+#page-login .form-control:focus {
+	background: var(--mo-surface);
+	border-color: var(--mo-accent);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--mo-accent) 22%, transparent);
+	outline: 0;
+}
+#page-login .form-control::placeholder { color: #a8b4bc; }
+
+#page-login .btn-login,
+#page-login .btn-signup,
+#page-login .btn-forgot {
+	width: 100%;
+	height: 44px;
+	border: 0;
+	border-radius: 5px;
+	background: var(--mo-accent);
+	color: var(--mo-on-accent);
+	font-size: 14px;
+	font-weight: 600;
+	letter-spacing: 0.3px;
+	transition: filter 0.13s ease, transform 0.08s ease;
+}
+#page-login .btn-login:hover,
+#page-login .btn-signup:hover,
+#page-login .btn-forgot:hover { filter: brightness(1.12); }
+#page-login .btn-login:active { transform: translateY(1px); }
+
+/* Secondary action. It must not compete with the primary one. */
+#page-login .btn-login-with-email-link {
+	background: var(--mo-surface);
+	color: var(--mo-accent);
+	border: 1px solid var(--mo-line);
+	font-weight: 500;
+	margin-top: 9px;
+}
+#page-login .btn-login-with-email-link:hover { background: var(--mo-field); }
+
+#page-login a { color: var(--mo-accent); font-size: 13px; }
+
+/* --------------------------------------------------------------- notes --- */
+
+.mo-card-notes {
+	margin-top: 26px;
+	padding-top: 18px;
+	border-top: 1px solid var(--mo-line);
+}
+.mo-support { font-size: 12px; color: var(--mo-muted); line-height: 1.6; }
+.mo-secure {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	margin-top: 9px;
+	font-size: 11.5px;
+	color: #8b979f;
+}
+.mo-secure svg { flex: 0 0 auto; }
+
+/* ------------------------------------------------------------- toggles --- */
+
+body.mo-no-signup [href*="signup"],
+body.mo-no-signup .sign-up-link { display: none !important; }
+body.mo-no-forgot [href*="forgot"] { display: none !important; }
+body.mo-no-email-link .btn-login-with-email-link,
+body.mo-no-email-link [href*="login-with-email-link"] { display: none !important; }
+
+/* ------------------------------------------------------------- layouts --- */
+
+#page-login[data-mo-layout="split-right"] .page_content { flex-direction: row-reverse; }
+#page-login[data-mo-layout="split-right"] .page_content:not(:has(.mo-brand-panel)) > * {
+	margin-left: 0;
+	margin-right: 46%;
+}
+
+/* Centred: the panel becomes a full-bleed backdrop and the form sits on a
+ * raised card above it. */
+#page-login[data-mo-layout="centred"] .page_content { display: block; position: relative; }
+#page-login[data-mo-layout="centred"] .page_content:not(:has(.mo-brand-panel)) > * {
+	margin-left: 0;
+}
+#page-login[data-mo-layout="centred"] .mo-brand-panel {
+	position: absolute;
+	inset: 0;
+	padding: 0;
+}
+#page-login[data-mo-layout="centred"] .mo-brand-body,
+#page-login[data-mo-layout="centred"] .mo-brand-foot,
+#page-login[data-mo-layout="centred"] .mo-brand-mark { display: none; }
+#page-login[data-mo-layout="centred"] .page_content > *:not(.mo-brand-panel) {
+	position: relative;
+	z-index: 2;
+	min-height: 100vh;
+	background: transparent;
+}
+#page-login[data-mo-layout="centred"] .login-content,
+#page-login[data-mo-layout="centred"] .page-card {
+	background: var(--mo-surface);
+	border-radius: 10px;
+	padding: 38px 36px 32px;
+	box-shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+	max-width: 404px;
+}
+
+/* ---------------------------------------------------------- responsive --- */
+
+@media (max-width: 900px) {
+	#page-login .page_content { display: block; min-height: 0; }
+	#page-login .page_content:not(:has(.mo-brand-panel)) > * { margin-left: 0; }
+	#page-login[data-mo-layout] .mo-brand-panel {
+		position: static;
+		padding: 28px 24px;
+		gap: 16px;
+	}
+	#page-login .mo-brand-body,
+	#page-login .mo-brand-foot { display: none; }
+	#page-login .mo-brand-mark img { height: 36px; }
+	#page-login .page_content > *:not(.mo-brand-panel) {
+		display: block;
+		padding: 40px 24px;
+		min-height: 0;
+	}
+	#page-login .login-content,
+	#page-login .page-card { margin: 0 auto; box-shadow: none; padding: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#page-login * { transition: none !important; }
+}
