@@ -350,3 +350,64 @@ def load_demo_data():
 @frappe.whitelist()
 def tools_available():
     return bool(frappe.conf.get("developer_mode")) and "System Manager" in frappe.get_roles()
+
+
+# Everything the sample loader and the scheduled jobs create, in an order that
+# removes referrers before the records they point at: deposits cite imports,
+# subscriptions cite plans.
+#
+# Accounting documents are deliberately absent from this list. A submitted
+# Sales Invoice has general ledger entries behind it and a Payment Entry has
+# moved a balance; neither is sample data, and a button that quietly cancelled
+# them would be the most destructive thing in this application.
+SAMPLE_DOCTYPES = [
+    "Revenue Exception",
+    "Payment Attempt",
+    "Gateway Request Log",
+    "Merchant Deposit",
+    "Processor Residual Import",
+    "Merchant Subscription",
+    "Merchant Usage",
+    "Merchant Billing Plan",
+]
+
+
+@frappe.whitelist()
+def clear_sample_data():
+    """Removes the operational records so the loader can build them again.
+
+    Merchants, invoices, payments and dunnings survive. That is a limitation
+    worth knowing rather than a bug: once AutoPay has settled an invoice there
+    is no receivable left for a reloaded collection run to attempt, so the
+    collections story needs fresh invoices rather than a reload.
+    """
+    _tools_allowed()
+
+    removed = {}
+    for doctype in SAMPLE_DOCTYPES:
+        if not frappe.db.exists("DocType", doctype):
+            continue
+        names = frappe.get_all(doctype, pluck="name")
+        for name in names:
+            try:
+                frappe.delete_doc(doctype, name, force=True,
+                                  ignore_permissions=True, delete_permanently=True)
+            except Exception:
+                frappe.log_error(title=f"merchant_ops: could not clear {doctype} {name}")
+        if names:
+            removed[doctype] = len(names)
+
+    # Agreed rates are child rows on Contract, so they are not documents the
+    # loop above can reach.
+    rates = frappe.db.count("Merchant Contract Rate", {"parenttype": "Contract"})
+    if rates:
+        frappe.db.delete("Merchant Contract Rate", {"parenttype": "Contract"})
+        removed["Merchant Contract Rate"] = rates
+
+    frappe.db.commit()
+    frappe.clear_cache()
+
+    return {
+        "removed": removed or "nothing to remove",
+        "kept": "Merchants, Sales Invoices, Payment Entries and Dunnings are untouched.",
+    }

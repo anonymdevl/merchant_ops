@@ -22,17 +22,74 @@ frappe.pages["merchant-hub"].on_page_load = function (wrapper) {
 	frappe.call({ method: "merchant_ops.api.tools_available" }).then((r) => {
 		if (!r || !r.message) return;
 
-		const run = (label, method, args) => {
-			page.add_menu_item(label, () => {
-				frappe.confirm(__("Run {0} now?", [label]), () => {
+		// Label for the menu, question for the dialog. They are written
+		// separately because a confirmation that repeats the menu item tells
+		// the reader nothing they did not just click.
+		const TOOLS = [
+			{
+				label: __("Leakage sweep"),
+				method: "merchant_ops.api.run_sweep",
+				question: __("Compare every layer now and record what disagrees?"),
+			},
+			{
+				label: __("Collections cycle"),
+				method: "merchant_ops.api.run_collections",
+				question: __("Present the debits that are due, re-present what came back retriable, and move overdue invoices up the ladder?"),
+			},
+			{
+				label: __("Billing run"),
+				method: "merchant_ops.api.run_billing",
+				question: __("Bill last period across every active subscription? Anything already invoiced for that period is skipped."),
+			},
+			{
+				label: __("Load sample data"),
+				method: "merchant_ops.api.load_demo_data",
+				question: __("Add the sample records that are missing? Nothing already on the instance is changed."),
+			},
+		];
+
+		// Separated from the list above because it destroys rather than runs,
+		// and it should not sit one slip of the mouse away from the others.
+		page.add_menu_item(__("Clear sample data"), () => {
+			frappe.warn(
+				__("Clear sample data?"),
+				__("Removes exceptions, payment attempts, gateway log entries, deposits, residual imports, subscriptions, usage, billing plans and the agreed rates on contracts.") +
+					"<br><br><b>" +
+					__("Merchants, sales invoices, payment entries and dunnings are left alone.") +
+					"</b><br><br>" +
+					__("Once an invoice has been settled there is no receivable left to attempt, so a reload will not rebuild the collection history. That needs fresh invoices."),
+				() => {
 					frappe.call({
-						method,
-						args: args || {},
+						method: "merchant_ops.api.clear_sample_data",
 						freeze: true,
-						freeze_message: __("Running…"),
+						freeze_message: __("Clearing…"),
 						callback: (res) => {
 							frappe.msgprint({
-								title: label,
+								title: __("Cleared"),
+								message: `<pre style="white-space:pre-wrap;margin:0">${
+									frappe.utils.escape_html(JSON.stringify(res.message, null, 2))
+								}</pre>`,
+								indicator: "orange",
+							});
+							hub.load();
+						},
+					});
+				},
+				__("Clear"),
+				true
+			);
+		});
+
+		TOOLS.forEach((tool) => {
+			page.add_menu_item(tool.label, () => {
+				frappe.confirm(tool.question, () => {
+					frappe.call({
+						method: tool.method,
+						freeze: true,
+						freeze_message: __("Working…"),
+						callback: (res) => {
+							frappe.msgprint({
+								title: tool.label,
 								message: `<pre style="white-space:pre-wrap;margin:0">${
 									frappe.utils.escape_html(JSON.stringify(res.message, null, 2))
 								}</pre>`,
@@ -43,12 +100,7 @@ frappe.pages["merchant-hub"].on_page_load = function (wrapper) {
 					});
 				});
 			});
-		};
-
-		run(__("Run leakage sweep"), "merchant_ops.api.run_sweep");
-		run(__("Run collections cycle"), "merchant_ops.api.run_collections");
-		run(__("Run billing"), "merchant_ops.api.run_billing");
-		run(__("Load demo data"), "merchant_ops.api.load_demo_data");
+		});
 	});
 };
 
