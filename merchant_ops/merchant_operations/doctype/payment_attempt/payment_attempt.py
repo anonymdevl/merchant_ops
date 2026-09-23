@@ -50,10 +50,33 @@ class PaymentAttempt(Document):
     # --- return code policy ---------------------------------------------
 
     def _apply_return_policy(self):
-        if self.status != "Failed" or not self.return_code:
+        """What the code means, and what may still be done about it.
+
+        These are two different questions and they are deliberately separated.
+        The meaning of a return code is a permanent fact about what the bank
+        said, so label and family are kept for as long as the code is on the
+        record — including after the attempt is abandoned. What changes with
+        status is only whether anything further may be presented.
+
+        An earlier version cleared the label and family whenever the status was
+        not Failed, which meant recording a new mandate erased half the
+        evidence of the refusal it was answering.
+        """
+        if not self.return_code:
             self.return_label = None
             self.return_family = None
             self.retriable = 0
+            self.next_retry_on = None
+            return
+
+        self.return_label = ach.label(self.return_code)
+        self.return_family = ach.family(self.return_code)
+
+        if self.status != "Failed":
+            # Abandoned or superseded: the code still means what it meant, but
+            # nothing more is owed to it.
+            self.retriable = 0
+            self.next_retry_on = None
             return
 
         prior_failures = frappe.db.count("Payment Attempt", {
@@ -62,8 +85,6 @@ class PaymentAttempt(Document):
             "name": ["!=", self.name or ""],
         })
 
-        self.return_label = ach.label(self.return_code)
-        self.return_family = ach.family(self.return_code)
         self.retriable = 1 if ach.is_retriable(self.return_code, prior_failures) else 0
         self.mandate_disabled = 1 if ach.should_disable_mandate(self.return_code) else 0
         self.next_retry_on = (

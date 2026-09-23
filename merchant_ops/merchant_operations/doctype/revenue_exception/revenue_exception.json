@@ -51,7 +51,7 @@
    "fieldname": "exception_type",
    "fieldtype": "Select",
    "label": "Exception Type",
-   "options": "Underbilled\nUnbilled Subscription\nRate Mismatch\nMissing Residual\nUnmapped MID\nFailed Collection\nSettlement Variance\nUnapproved Rate",
+   "options": "Underbilled\nUnbilled Subscription\nRate Mismatch\nMissing Residual\nUnmapped MID\nFailed Collection\nRestriction Proposed\nSettlement Variance\nUnapproved Rate\nStatus Mismatch",
    "reqd": 1,
    "in_list_view": 1,
    "in_standard_filter": 1

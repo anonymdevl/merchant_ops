@@ -52,9 +52,19 @@ def run_autopay():
               WHERE pa.sales_invoice = si.name
                 AND pa.status IN ('Scheduled', 'Succeeded')
           )
+          -- A return the rules forbid re-presenting is terminal for this
+          -- mandate, not just for that attempt. Without this the next run
+          -- would present the debit again the following day, which is the
+          -- precise failure the return-code policy exists to prevent.
+          AND NOT EXISTS (
+              SELECT 1 FROM `tabPayment Attempt` blocked
+              WHERE blocked.sales_invoice = si.name
+                AND blocked.status = 'Failed'
+                AND blocked.retriable = 0
+          )
     """, as_dict=True)
 
-    created = 0
+    created, blocked = 0, 0
     for invoice in invoices:
         if frappe.db.get_value("Customer", invoice.customer, "account_status") == "Terminated":
             continue
@@ -71,8 +81,19 @@ def run_autopay():
         }).insert(ignore_permissions=True)
         created += 1
 
+    # Invoices held back because their mandate is dead. Reported rather than
+    # silently skipped: somebody has to collect new bank details, and a count
+    # of zero attempts with no explanation looks like the job failed.
+    blocked = frappe.db.sql("""
+        SELECT COUNT(DISTINCT si.name)
+        FROM `tabSales Invoice` si
+        JOIN `tabPayment Attempt` pa ON pa.sales_invoice = si.name
+        WHERE si.docstatus = 1 AND si.outstanding_amount > 0
+          AND pa.status = 'Failed' AND pa.retriable = 0
+    """)[0][0]
+
     frappe.db.commit()
-    return {"scheduled": created}
+    return {"scheduled": created, "held_mandate_disabled": blocked}
 
 
 def run_retries():
@@ -235,16 +256,19 @@ def _flag_for_restriction(invoice):
         return False
 
     if frappe.db.exists("Revenue Exception", {
-        "exception_type": "Failed Collection",
+        "exception_type": "Restriction Proposed",
         "merchant": invoice.customer,
         "source_document": invoice.name,
         "status": ["!=", "Resolved"],
     }):
         return False
 
+    # Its own type, not Failed Collection. A proposal to cut a merchant off is
+    # a different decision from a debit that bounced, and typing them alike let
+    # an unrelated action — recording a new mandate — close it by accident.
     frappe.get_doc({
         "doctype": "Revenue Exception",
-        "exception_type": "Failed Collection",
+        "exception_type": "Restriction Proposed",
         "merchant": invoice.customer,
         "status": "Open",
         "detected_on": nowdate(),
@@ -254,3 +278,67 @@ def _flag_for_restriction(invoice):
                   f"restriction threshold. Proposed for restriction — requires approval.",
     }).insert(ignore_permissions=True, ignore_mandatory=True)
     return True
+
+
+@frappe.whitelist()
+def reauthorise(merchant, reference=None, note=None):
+    """Records a fresh mandate and releases the hold on a merchant's invoices.
+
+    A return like R02, R07 or R10 kills the mandate, and AutoPay holds every
+    invoice for that merchant so the debit is never presented again. That hold
+    is correct and it is also permanent, which means the platform needs a door:
+    somebody obtains a new authorisation, records it here, and collection
+    resumes.
+
+    The failed attempts are moved to Abandoned rather than deleted. What was
+    presented, what came back and when are the facts a dispute turns on, and a
+    new mandate does not make the old refusal untrue.
+
+        bench --site <site> execute merchant_ops.collections.reauthorise \\
+            --kwargs "{'merchant':'Delgado Auto Service','reference':'ACH auth 2026-09-23'}"
+    """
+    frappe.only_for(("Accounts Manager", "System Manager"))
+
+    blocked = frappe.get_all("Payment Attempt", filters={
+        "merchant": merchant, "status": "Failed", "retriable": 0,
+    }, pluck="name")
+
+    if not blocked:
+        return {"released": 0, "note": "Nothing was holding this merchant."}
+
+    stamp = f"New authorisation recorded {nowdate()}"
+    if reference:
+        stamp += f" — {reference}"
+    if note:
+        stamp += f". {note}"
+
+    for name in blocked:
+        doc = frappe.get_doc("Payment Attempt", name)
+        doc.status = "Abandoned"
+        doc.mandate_disabled = 0
+        doc.notes = "\n".join(filter(None, [doc.notes, stamp]))
+        doc.flags.ignore_mandatory = True
+        doc.save(ignore_permissions=True)
+
+    # Closed by source document, not by merchant and type. A new mandate
+    # answers the attempts it replaces and nothing else: a proposal to restrict
+    # this merchant, or a rate mismatch on their subscription, is untouched.
+    closed = 0
+    for name in frappe.get_all("Revenue Exception", filters={
+        "source_doctype": "Payment Attempt",
+        "source_document": ["in", blocked],
+        "status": ["!=", "Resolved"],
+    }, pluck="name"):
+        doc = frappe.get_doc("Revenue Exception", name)
+        doc.status = "Resolved"
+        doc.resolution_note = stamp
+        doc.flags.ignore_mandatory = True
+        doc.save(ignore_permissions=True)
+        closed += 1
+
+    frappe.db.commit()
+    return {
+        "released": len(blocked),
+        "exceptions_closed": closed,
+        "note": "AutoPay will present these invoices again on its next run.",
+    }

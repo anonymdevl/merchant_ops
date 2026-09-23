@@ -31,6 +31,7 @@ def run(only=None):
         "unbilled_subscription": unbilled_subscription,
         "missing_residual": missing_residual,
         "unmapped_mid": unmapped_mid,
+        "status_drift": status_drift,
     }
     if only:
         checks = {only: checks[only]}
@@ -337,6 +338,80 @@ def unmapped_mid():
     return findings
 
 
+def status_drift():
+    """Account status against what the receivable actually says.
+
+    account_status is set by a person and nothing reconciles it afterwards, so
+    it drifts in both directions. Past Due on a merchant who has paid is noise
+    in the collections queue. Restricted on a merchant who has paid is worse:
+    an account blocked from new activity for a reason that stopped being true,
+    which is revenue not being earned rather than revenue not being collected.
+
+    Both directions are reported. Neither is corrected — status is somebody's
+    decision, and a job that quietly reactivated a restricted merchant would be
+    making a commercial call it has no business making.
+    """
+    rows = frappe.db.sql("""
+        SELECT c.name, c.account_status,
+               COALESCE(SUM(CASE WHEN si.due_date < CURDATE() THEN si.outstanding_amount END), 0) AS overdue,
+               COALESCE(SUM(si.outstanding_amount), 0) AS outstanding
+        FROM `tabCustomer` c
+        LEFT JOIN `tabSales Invoice` si
+               ON si.customer = c.name AND si.docstatus = 1 AND si.outstanding_amount > 0
+        WHERE IFNULL(c.account_status, '') != ''
+        GROUP BY c.name, c.account_status
+    """, as_dict=True)
+
+    findings = []
+    for row in rows:
+        if row.account_status in ("Past Due", "Restricted") and flt(row.overdue) <= MATERIALITY:
+            detail = (
+                f"Account is marked {row.account_status} with nothing overdue"
+                + (f" and {flt(row.outstanding):,.2f} outstanding but not yet due."
+                   if flt(row.outstanding) else " and no receivable at all.")
+            )
+            if row.account_status == "Restricted":
+                # Restriction has causes other than non-payment — fraud, excess
+                # chargebacks, a risk decision — and this check cannot see any
+                # of them. It asserts only where the platform itself proposed
+                # the restriction for debt; otherwise it asks.
+                for_debt = frappe.db.exists("Revenue Exception", {
+                    "exception_type": "Restriction Proposed", "merchant": row.name,
+                })
+                detail += (
+                    " The restriction was proposed for non-payment, and the debt is now "
+                    "cleared: the merchant is blocked from new activity for a reason that "
+                    "no longer holds."
+                    if for_debt else
+                    " If this restriction was for non-payment the reason no longer holds. "
+                    "If it was a risk or fraud decision it stands, and this finding can be "
+                    "resolved with that as the note."
+                )
+            findings.append({
+                "exception_type": "Status Mismatch",
+                "merchant": row.name,
+                "expected_amount": 0,
+                "actual_amount": 0,
+                "source_doctype": "Customer",
+                "source_document": row.name,
+                "detail": detail,
+            })
+
+        elif row.account_status == "Active" and flt(row.overdue) > MATERIALITY:
+            findings.append({
+                "exception_type": "Status Mismatch",
+                "merchant": row.name,
+                "expected_amount": flt(row.overdue),
+                "actual_amount": 0,
+                "source_doctype": "Customer",
+                "source_document": row.name,
+                "detail": f"Account is marked Active with {flt(row.overdue):,.2f} overdue. "
+                          f"Collections will not see it on the watchlist.",
+            })
+
+    return findings
+
+
 # --- retraction ---------------------------------------------------------
 
 # Check name -> the exception type it raises. Used to decide which types a run
@@ -354,6 +429,7 @@ TYPE_BY_CHECK = {
     "unbilled_subscription": "Unbilled Subscription",
     "missing_residual": "Missing Residual",
     "unmapped_mid": "Unmapped MID",
+    "status_drift": "Status Mismatch",
 }
 
 
