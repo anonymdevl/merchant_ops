@@ -176,7 +176,11 @@ def _statements():
             "processor": processor,
             "statement_period": period,
             "status": "Imported",
-        }).insert(ignore_permissions=True)
+        })
+        # The file can only be attached once the document has a name, so this
+        # one insert legitimately has neither file nor rows.
+        doc.flags.ignore_empty_statement = True
+        doc.insert(ignore_permissions=True)
 
         attachment = save_file(filename, content, doc.doctype, doc.name, is_private=1)
         doc.statement_file = attachment.file_url

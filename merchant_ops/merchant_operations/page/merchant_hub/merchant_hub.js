@@ -61,7 +61,7 @@ class MerchantHub {
 		const tiles = [
 			{
 				label: __("Outstanding AR"), value: this.fmt(k.outstanding),
-				sub: __("{0} overdue", [this.fmt(k.overdue)]),
+				sub: __("{0} overdue · aging report inside", [this.fmt(k.overdue)]),
 				tone: k.overdue > 0 ? "warn" : "",
 				route: () => frappe.set_route("merchant-focus", "overdue"),
 			},

@@ -20,6 +20,17 @@ frappe.pages["merchant-focus"].on_page_load = function (wrapper) {
 	page.set_primary_action(__("Refresh"), () => view.route(), "refresh");
 };
 
+// The cohort answers "which merchants and why". The aging report answers "how
+// old is the money" across the whole book. Finance wants both, and routing the
+// console tile here took the report away, so each view that has a natural
+// report carries it.
+const REPORTS = {
+	overdue: { label: "AR Aging Report", report: "Accounts Receivable" },
+	past_due: { label: "AR Aging Report", report: "Accounts Receivable" },
+	failed: { label: "AR Aging Report", report: "Accounts Receivable" },
+	restricted: { label: "AR Summary", report: "Accounts Receivable Summary" },
+};
+
 class FocusView {
 	constructor(page) {
 		this.page = page;
@@ -50,6 +61,7 @@ class FocusView {
 			const d = r.message;
 			this.currency = d.currency;
 			this.page.set_title(d.title);
+			this.report_action(view);
 			this.$body.empty().append(this.head(d.title, d.blurb, d.rows.length));
 
 			if (!d.rows.length) {
@@ -59,6 +71,20 @@ class FocusView {
 				return;
 			}
 			d.rows.forEach((row) => this.$body.append(this.card(row)));
+		});
+	}
+
+	report_action(view) {
+		const r = REPORTS[view];
+		if (!r) {
+			this.page.clear_secondary_action();
+			return;
+		}
+		this.page.set_secondary_action(__(r.label), () => {
+			// Carry the company through so the report opens on data rather than
+			// on an empty filter bar.
+			frappe.route_options = { company: frappe.defaults.get_user_default("Company") };
+			frappe.set_route("query-report", r.report);
 		});
 	}
 
@@ -137,6 +163,7 @@ class FocusView {
 			const d = r.message;
 			this.currency = d.currency;
 			this.page.set_title(name);
+			this.page.clear_secondary_action();
 			this.$body.empty();
 
 			const p = d.profile;

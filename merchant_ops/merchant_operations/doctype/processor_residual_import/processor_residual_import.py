@@ -18,6 +18,8 @@ class ProcessorResidualImport(Document):
         if self._file_changed():
             self._import_file()
 
+        self._require_content()
+
         self._map_rows()
         self._check_processor()
         self._roll_up()
@@ -42,6 +44,21 @@ class ProcessorResidualImport(Document):
                           f"{self.statement_period} statement do not map to a merchant: "
                           f"{self._unmapped_mids()}.",
             }).insert(ignore_permissions=True, ignore_mandatory=True)
+
+    def _require_content(self):
+        """Refuses to save an import that imports nothing.
+
+        A document that accepts a meaningless state silently is worse than one
+        that errors: the obvious first action is to create the record, save it,
+        and wonder why the console did not move.
+        """
+        if self.statement_file or self.rows or self.flags.ignore_empty_statement:
+            return
+        frappe.throw(
+            "Attach the processor's statement file, or add the rows by hand in "
+            "<b>Statement Rows</b>. An import with neither has nothing to map and "
+            "produces no figures."
+        )
 
     # --- import ---------------------------------------------------------
 

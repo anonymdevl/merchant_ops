@@ -274,6 +274,13 @@ tr.clickable:hover { background: var(--mo-page); }
 }
 
 /* --- merchant focus ------------------------------------------------- */
+/*
+ * Every rule below is scoped to .mo-focus. The first version of this block was
+ * not, and because it is appended after the console's rules it quietly won:
+ * .mo-table td was redefined with no left padding, so the exception table on
+ * the console lost its gutter and the text sat against the card edge. Two pages
+ * sharing a stylesheet have to share a namespace as well.
+ */
 .mo-focus .mo-head-blurb { margin-top: 4px; max-width: 46rem; }
 .mo-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 
@@ -299,29 +306,30 @@ tr.clickable:hover { background: var(--mo-page); }
   font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--text-muted, #7c858e); margin-bottom: 6px;
 }
-.mo-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
-.mo-table td {
+.mo-focus .mo-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.mo-focus .mo-table td {
   padding: 6px 10px 6px 0; font-size: 0.88rem;
   border-bottom: 1px solid var(--border-color, #f1f3f5);
 }
-.mo-table td:nth-child(3), .mo-table td:last-child { text-align: right; }
-.mo-table tr:last-child td { border-bottom: 0; }
+.mo-focus .mo-table td:nth-child(3),
+.mo-focus .mo-table td:last-child { text-align: right; }
+.mo-focus .mo-table tr:last-child td { border-bottom: 0; }
 
-.mo-age {
+.mo-focus .mo-age {
   background: #fdecea; color: #a1332b; border-radius: 9px;
   padding: 1px 7px; font-size: 0.76rem; font-weight: 600;
 }
-.mo-ok { color: #2f6a4c; }
-.mo-bad { color: #a1332b; }
-.mo-pill {
+.mo-focus .mo-ok { color: #2f6a4c; }
+.mo-focus .mo-bad { color: #a1332b; }
+.mo-focus .mo-pill {
   display: inline-block; padding: 2px 9px; border-radius: 10px;
   font-size: 0.74rem; font-weight: 600; letter-spacing: 0.04em;
 }
-.mo-pill.good { background: #e3f0e8; color: #2f6a4c; }
-.mo-pill.warn { background: #fdf3e2; color: #8a5f1c; }
-.mo-pill.bad  { background: #fdecea; color: #a1332b; }
+.mo-focus .mo-pill.good { background: #e3f0e8; color: #2f6a4c; }
+.mo-focus .mo-pill.warn { background: #fdf3e2; color: #8a5f1c; }
+.mo-focus .mo-pill.bad  { background: #fdecea; color: #a1332b; }
 
-.mo-empty {
+.mo-focus .mo-empty {
   padding: 40px 0; text-align: center;
   color: var(--text-muted, #7c858e); font-size: 0.95rem;
 }

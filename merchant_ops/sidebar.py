@@ -31,6 +31,7 @@ SIDEBAR = "Merchant Ops"
 ITEMS = [
     ("Link", "Home", "Workspace", "Merchant Ops", "home", 0, None),
     ("Link", "Operations Console", "Page", "merchant-hub", "chart", 0, None),
+    ("Link", "Merchant Focus", "Page", "merchant-focus", "list", 0, None),
 
     ("Section Break", "Merchants", None, None, "customer", 0, None),
     ("Link", "All Merchants", "DocType", "Customer", None, 1, None),

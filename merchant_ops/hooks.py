@@ -31,7 +31,7 @@ add_to_apps_screen = [
 # and hooks.py is imported on every request.
 #
 # BUMP THIS whenever portal.css, portal.js or hub.css changes.
-ASSET_VERSION = "20"
+ASSET_VERSION = "23"
 
 web_include_css = f"/assets/merchant_ops/css/portal.css?v={ASSET_VERSION}"
 web_include_js = f"/assets/merchant_ops/js/portal.js?v={ASSET_VERSION}"
@@ -84,4 +84,10 @@ doc_events = {
     "Item Price": {
         "validate": "merchant_ops.install.stamp_approval",
     },
+}
+
+# Adds the Merchant 360 button to the standard Customer form rather than
+# replacing the form, so nothing here is lost on an ERPNext upgrade.
+doctype_js = {
+    "Customer": "public/js/customer.js",
 }
