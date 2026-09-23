@@ -63,6 +63,29 @@ INVOICE_FIELDS = {
     ]
 }
 
+# The agreement, given somewhere to hold the rates that were actually agreed.
+# ERPNext's Contract carries parties, dates and terms as prose; what it has no
+# field for is the commercial number, which is exactly the record the leakage
+# sweep needs on one end of its comparison.
+CONTRACT_FIELDS = {
+    "Contract": [
+        {
+            "fieldname": "mo_commercial_section", "label": "Agreed Commercial Terms",
+            "fieldtype": "Section Break", "insert_after": "contract_terms",
+        },
+        {
+            "fieldname": "merchant", "label": "Merchant",
+            "fieldtype": "Link", "options": "Customer",
+            "insert_after": "mo_commercial_section", "in_standard_filter": 1,
+        },
+        {
+            "fieldname": "agreed_rates", "label": "Agreed Rates",
+            "fieldtype": "Table", "options": "Merchant Contract Rate",
+            "insert_after": "merchant",
+        },
+    ]
+}
+
 CUSTOMER_FIELDS = {
     "Customer": [
         {
@@ -108,20 +131,39 @@ CUSTOMER_FIELDS = {
 
 
 def after_install():
-    create_custom_fields(CUSTOMER_FIELDS, update=True)
-    create_custom_fields(PRICING_FIELDS, update=True)
-    create_custom_fields(INVOICE_FIELDS, update=True)
+    ensure_custom_fields()
     _label_customer_as_merchant()
     _build_sidebar()
     frappe.db.commit()
-    print("merchant_ops: custom fields installed on Customer and Item Price")
+    print("merchant_ops: installed")
+
+
+def ensure_custom_fields():
+    """Creates every custom field the app depends on, idempotently.
+
+    This is called from after_migrate as well as after_install, and that is the
+    whole point. after_install runs once, at install; a field added to this file
+    in a later release would never reach a site that was already installed. The
+    symptom is quiet — a governance field that simply is not on the form, or a
+    scheduled job filtering on a column that does not exist — so the fields are
+    re-asserted on every migrate instead of assumed.
+    """
+    create_custom_fields(CUSTOMER_FIELDS, update=True)
+    create_custom_fields(PRICING_FIELDS, update=True)
+    create_custom_fields(INVOICE_FIELDS, update=True)
+    create_custom_fields(CONTRACT_FIELDS, update=True)
 
 
 def after_migrate():
-    """Frappe regenerates the sidebar when the workspace changes, dropping our
-    icons and drill-downs. Re-applying after every migrate is what makes them
-    stick."""
+    """Re-asserts everything a migrate can leave behind.
+
+    Frappe regenerates the sidebar when the workspace changes, dropping our
+    icons and drill-downs, and custom fields added after install never reach an
+    existing site on their own. Both are cheap to redo and expensive to miss.
+    """
+    ensure_custom_fields()
     _build_sidebar()
+    frappe.db.commit()
 
 
 def _build_sidebar():

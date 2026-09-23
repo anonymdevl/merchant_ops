@@ -1,0 +1,10 @@
+{"actions":[],"creation":"2026-09-23 14:00:00.000000","doctype":"DocType","editable_grid":1,"engine":"InnoDB","istable":1,
+"field_order":["item","agreed_rate","effective_from","note"],
+"fields":[
+ {"fieldname":"item","fieldtype":"Link","options":"Item","label":"Item","in_list_view":1,"columns":4,"reqd":1},
+ {"fieldname":"agreed_rate","fieldtype":"Currency","label":"Agreed Rate","in_list_view":1,"columns":2,"reqd":1},
+ {"fieldname":"effective_from","fieldtype":"Date","label":"Effective From","in_list_view":1,"columns":2,
+  "description":"Set this when a rate is amended mid-term instead of overwriting the old one, so the change has a date."},
+ {"fieldname":"note","fieldtype":"Data","label":"Note","in_list_view":1,"columns":3}
+],
+"links":[],"modified":"2026-09-23 14:00:00.000000","module":"Merchant Operations","name":"Merchant Contract Rate","owner":"Administrator","permissions":[],"sort_field":"idx","sort_order":"ASC"}

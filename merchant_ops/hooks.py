@@ -31,17 +31,27 @@ add_to_apps_screen = [
 # and hooks.py is imported on every request.
 #
 # BUMP THIS whenever portal.css, portal.js or hub.css changes.
-ASSET_VERSION = "23"
+ASSET_VERSION = "27"
 
 web_include_css = f"/assets/merchant_ops/css/portal.css?v={ASSET_VERSION}"
 web_include_js = f"/assets/merchant_ops/js/portal.js?v={ASSET_VERSION}"
 
-app_include_css = f"/assets/merchant_ops/css/hub.css?v={ASSET_VERSION}"
+# kit.css defines the shared visual language and must load before the pages
+# that use it. kit.js publishes the builders those pages construct themselves
+# from, so both are desk-wide rather than per-page.
+app_include_css = [
+    f"/assets/merchant_ops/css/kit.css?v={ASSET_VERSION}",
+    f"/assets/merchant_ops/css/hub.css?v={ASSET_VERSION}",
+]
+
+app_include_js = [
+    f"/assets/merchant_ops/js/kit.js?v={ASSET_VERSION}",
+]
 
 fixtures = [
     {
         "dt": "Custom Field",
-        "filters": [["dt", "in", ["Customer", "Item Price", "Sales Invoice"]],
+        "filters": [["dt", "in", ["Customer", "Item Price", "Sales Invoice", "Contract"]],
                     ["module", "in", [None, "Merchant Operations"]]],
     },
     {
@@ -90,4 +100,5 @@ doc_events = {
 # replacing the form, so nothing here is lost on an ERPNext upgrade.
 doctype_js = {
     "Customer": "public/js/customer.js",
+    "Contract": "public/js/contract.js",
 }

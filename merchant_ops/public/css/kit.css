@@ -1,0 +1,196 @@
+/*
+ * merchant_ops UI kit
+ * ===================
+ *
+ * The visual language of the Merchant Focus page, lifted out so every screen
+ * we add starts from it rather than reinventing it. One stylesheet, one
+ * prefix, one set of tokens.
+ *
+ * Everything here is prefixed `mok-`. That is not decoration: an earlier
+ * version of this app appended a second page's styles to the console's
+ * stylesheet, reused the class names, and silently overrode the console's
+ * table padding because it happened to come later in the file. Two pages
+ * sharing a stylesheet have to share a namespace.
+ *
+ * Tokens resolve against Frappe's own CSS variables first and fall back to
+ * literals, so the kit follows the desk into dark mode and through theme
+ * changes instead of fighting it.
+ *
+ * Usage is documented in merchant_ops/public/js/kit.js, which builds these
+ * components so a new page is a data structure rather than a pile of markup.
+ */
+
+:root {
+  --mok-ink:        var(--text-color, #1c2126);
+  --mok-ink-2:      var(--text-light, #4c555c);
+  --mok-ink-3:      var(--text-muted, #7c858e);
+  --mok-line:       var(--border-color, #e5e7eb);
+  --mok-line-soft:  var(--border-color, #f1f3f5);
+  --mok-card:       var(--card-bg, #ffffff);
+  --mok-page:       var(--subtle-fg, #f7f8f9);
+  --mok-accent:     #1f5c8b;
+
+  --mok-good:       #2f6a4c;
+  --mok-good-bg:    #e3f0e8;
+  --mok-warn:       #8a5f1c;
+  --mok-warn-bg:    #fdf3e2;
+  --mok-bad:        #a1332b;
+  --mok-bad-bg:     #fdecea;
+
+  --mok-radius:     10px;
+  --mok-shadow:     0 1px 2px rgba(16, 24, 32, .04), 0 1px 3px rgba(16, 24, 32, .06);
+  --mok-gutter:     18px;
+}
+
+/* --- page shell ------------------------------------------------------ */
+
+.mok {
+  max-width: 1180px;          /* Frappe hands a custom Page the full width
+                                 with no gutters, which reads as unfinished
+                                 on a wide monitor. */
+  margin: 0 auto;
+  padding: 6px 24px 56px;
+  color: var(--mok-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.mok-head {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 24px; padding: 10px 0 18px;
+  border-bottom: 1px solid var(--mok-line);
+  margin-bottom: 20px;
+}
+.mok-eyebrow {
+  font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase;
+  color: var(--mok-ink-3); margin-bottom: 5px;
+}
+.mok-title { font-size: 25px; font-weight: 600; letter-spacing: -.4px; line-height: 1.15; }
+.mok-blurb { color: var(--mok-ink-3); font-size: 13px; margin-top: 6px; max-width: 46rem; }
+.mok-meta { text-align: right; font-size: 12.5px; white-space: nowrap; }
+.mok-meta .mok-muted { font-size: 11.5px; }
+.mok-muted { color: var(--mok-ink-3); }
+
+/* --- stat tiles ------------------------------------------------------- */
+
+.mok-grid { display: grid; gap: 12px; margin-bottom: 20px; }
+.mok-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.mok-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.mok-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.mok-grid-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+
+.mok-tile {
+  background: var(--mok-card);
+  border: 1px solid var(--mok-line);
+  border-radius: var(--mok-radius);
+  box-shadow: var(--mok-shadow);
+  padding: 15px 16px 14px;
+  position: relative; overflow: hidden;
+}
+.mok-tile.clickable { cursor: pointer; transition: box-shadow .13s ease, transform .13s ease; }
+.mok-tile.clickable:hover { box-shadow: 0 2px 6px rgba(16,24,32,.10); transform: translateY(-1px); }
+
+/* A status hairline, not a heavy border. The tile should read as neutral
+   until something is actually wrong with the number on it. */
+.mok-tile::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 2px; background: transparent;
+}
+.mok-tile.good::before { background: var(--mok-good); }
+.mok-tile.warn::before { background: var(--mok-warn); }
+.mok-tile.bad::before  { background: var(--mok-bad); }
+
+.mok-tile-label {
+  font-size: 10.5px; letter-spacing: 1.1px; text-transform: uppercase;
+  color: var(--mok-ink-3); margin-bottom: 8px;
+}
+.mok-tile-value { font-size: 23px; font-weight: 600; letter-spacing: -.5px; line-height: 1.1; }
+.mok-tile-sub { font-size: 11.5px; color: var(--mok-ink-3); margin-top: 6px; }
+
+/* --- cards ------------------------------------------------------------ */
+
+.mok-card {
+  background: var(--mok-card);
+  border: 1px solid var(--mok-line);
+  border-radius: var(--mok-radius);
+  box-shadow: var(--mok-shadow);
+  padding: 16px var(--mok-gutter) 17px;
+  margin-bottom: 14px;
+}
+.mok-card-head {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 16px; padding-bottom: 12px;
+  border-bottom: 1px solid var(--mok-line);
+}
+.mok-card-title { font-weight: 600; font-size: 16px; letter-spacing: -.2px; }
+a.mok-card-title { color: var(--mok-ink); }
+a.mok-card-title:hover { color: var(--mok-accent); }
+.mok-card-figure { text-align: right; white-space: nowrap; }
+.mok-figure { font-size: 19px; font-weight: 600; letter-spacing: -.3px; }
+
+/* --- a titled table inside a card ------------------------------------- */
+
+.mok-sub { margin-top: 15px; }
+.mok-sub-title {
+  font-size: 10.5px; letter-spacing: 1.1px; text-transform: uppercase;
+  color: var(--mok-ink-3); margin-bottom: 7px;
+}
+.mok-table { width: 100%; border-collapse: collapse; }
+.mok-table th {
+  text-align: left; padding: 7px 10px 7px 0;
+  font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--mok-ink-3); font-weight: 500;
+  border-bottom: 1px solid var(--mok-line);
+}
+.mok-table td {
+  padding: 8px 10px 8px 0; font-size: 13px;
+  border-bottom: 1px solid var(--mok-line-soft);
+  color: var(--mok-ink-2);
+}
+.mok-table tr:last-child td { border-bottom: 0; }
+.mok-table td:last-child, .mok-table th:last-child { text-align: right; padding-right: 0; }
+.mok-table td.num, .mok-table th.num { text-align: right; }
+.mok-table td strong { color: var(--mok-ink); font-weight: 600; }
+.mok-table tr.clickable { cursor: pointer; }
+.mok-table tr.clickable:hover td { background: var(--mok-page); }
+
+/* --- pills, badges, states -------------------------------------------- */
+
+.mok-pill {
+  display: inline-block; padding: 2px 9px; border-radius: 10px;
+  font-size: 11px; font-weight: 600; letter-spacing: .3px;
+  white-space: nowrap;
+}
+.mok-pill.good { background: var(--mok-good-bg); color: var(--mok-good); }
+.mok-pill.warn { background: var(--mok-warn-bg); color: var(--mok-warn); }
+.mok-pill.bad  { background: var(--mok-bad-bg);  color: var(--mok-bad); }
+.mok-pill.flat { background: var(--mok-page);    color: var(--mok-ink-3); }
+
+/* Age reads as a badge only once it has become a problem. A neutral age is
+   just a number; colouring every one of them trains people to ignore the
+   colour. */
+.mok-age { font-size: 11.5px; color: var(--mok-ink-3); }
+.mok-age.warn { background: var(--mok-warn-bg); color: var(--mok-warn); border-radius: 9px; padding: 1px 7px; font-weight: 600; }
+.mok-age.bad  { background: var(--mok-bad-bg);  color: var(--mok-bad);  border-radius: 9px; padding: 1px 7px; font-weight: 600; }
+
+.mok-ok  { color: var(--mok-good); }
+.mok-no  { color: var(--mok-bad); }
+
+.mok-empty {
+  padding: 44px 0; text-align: center;
+  color: var(--mok-ink-3); font-size: 14px; line-height: 1.6;
+}
+.mok-loading { padding: 40px 0; text-align: center; color: var(--mok-ink-3); font-size: 13px; }
+
+/* --- narrow ------------------------------------------------------------ */
+
+@media (max-width: 1080px) { .mok-grid-6 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 900px) {
+  .mok { padding: 6px 16px 40px; }
+  .mok-grid-4, .mok-grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mok-head { flex-direction: column; gap: 10px; }
+  .mok-meta { text-align: left; }
+  .mok-card-head { flex-direction: column; }
+  .mok-card-figure { text-align: left; }
+}
+@media (max-width: 620px) {
+  .mok-grid-6, .mok-grid-4, .mok-grid-3, .mok-grid-2 { grid-template-columns: 1fr 1fr; }
+}

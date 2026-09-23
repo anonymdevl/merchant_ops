@@ -45,6 +45,7 @@ def load():
     _statements()
     _deposits()
     _collection_history()
+    _contract_chain()
     frappe.db.commit()
     print("Demo data loaded. Run merchant_ops.detect.run to populate the exception queue.")
 
@@ -188,6 +189,69 @@ def _statements():
 
         print(f"  {processor} {period}: {doc.rows_imported} row(s), "
               f"{doc.rows_unmapped} unmapped, net {doc.net_residual:,.2f}")
+
+
+def _contract_chain():
+    """The March discount that never reached the subscription.
+
+    This is the scenario the whole leakage feature exists for, and it needs four
+    records to exist before it can be demonstrated at all: an item, an agreed
+    rate on a contract, a plan, and a subscription billing a different number.
+    Every one of those documents is internally correct. The disagreement lives
+    only between two of them.
+    """
+    if frappe.db.exists("Merchant Subscription", {"merchant": "Northside Coffee Group"}):
+        return
+
+    contract = frappe.db.get_value("Contract", {"party_name": "Northside Coffee Group"})
+    if not contract:
+        print("  no contract for Northside — skipping the chain")
+        return
+
+    item = _first("Item", {"is_sales_item": 1}) or _first("Item", {})
+    if not item:
+        print("  no items — skipping the chain")
+        return
+
+    # The contract was amended in March to 49.00.
+    doc = frappe.get_doc("Contract", contract)
+    doc.merchant = "Northside Coffee Group"
+    if not doc.get("agreed_rates"):
+        doc.append("agreed_rates", {
+            "item": item,
+            "agreed_rate": 49.00,
+            "effective_from": add_days(nowdate(), -190),
+            "note": "Amended from 34.00 at renewal.",
+        })
+    doc.flags.ignore_validate_update_after_submit = True
+    doc.save(ignore_permissions=True)
+
+    plan = "Gateway Fee — Standard"
+    if not frappe.db.exists("Merchant Billing Plan", plan):
+        frappe.get_doc({
+            "doctype": "Merchant Billing Plan",
+            "plan_name": plan,
+            "item": item,
+            "billing_model": "Flat",
+            "base_rate": 34.00,
+            "prorate": 1,
+            "description": "Flat monthly gateway fee.",
+        }).insert(ignore_permissions=True)
+
+    # The subscription still bills the pre-amendment rate. Nobody edited it.
+    subscription = frappe.get_doc({
+        "doctype": "Merchant Subscription",
+        "merchant": "Northside Coffee Group",
+        "contract": contract,
+        "status": "Active",
+        "start_date": add_days(nowdate(), -190),
+        "billing_day": 1,
+        "prorate": 1,
+        "items": [{"plan": plan, "qty": 1, "effective_from": add_days(nowdate(), -190)}],
+        "notes": "Rate amended on the contract in March. This record was not updated.",
+    }).insert(ignore_permissions=True)
+
+    print(f"  {subscription.name}: contract agrees 49.00, subscription bills 34.00")
 
 
 def _first(doctype, filters):

@@ -25,6 +25,7 @@ MATERIALITY = 1.00
 def run(only=None):
     """Scheduler entry point. Returns a per-check count so the log is readable."""
     checks = {
+        "contract_drift": contract_drift,
         "rate_mismatch": rate_mismatch,
         "unapproved_rate": unapproved_rate,
         "unbilled_subscription": unbilled_subscription,
@@ -55,6 +56,76 @@ def run(only=None):
 
 
 # --- checks -------------------------------------------------------------
+
+def contract_drift():
+    """Contract against subscription, and subscription against invoice.
+
+    This is the check the whole feature exists for, and it is the one that
+    cannot be done by validating a document. Someone agrees a discount, amends
+    the contract, and nobody edits the subscription. Every record that follows
+    is internally consistent: the subscription is valid, the invoice matches the
+    subscription, the payment matches the invoice. The disagreement only exists
+    between two documents that are never opened side by side.
+
+    Walking it needs both links present. A subscription with no contract is
+    skipped rather than guessed at.
+    """
+    findings = []
+
+    subscriptions = frappe.get_all(
+        "Merchant Subscription",
+        filters={"status": "Active", "contract": ["!=", ""]},
+        fields=["name", "merchant", "contract"],
+    )
+
+    for subscription in subscriptions:
+        agreed = {
+            row.item: flt(row.agreed_rate)
+            for row in frappe.get_all(
+                "Merchant Contract Rate",
+                filters={"parent": subscription.contract},
+                fields=["item", "agreed_rate"],
+            )
+        }
+        if not agreed:
+            continue
+
+        for row in frappe.get_all(
+            "Merchant Subscription Item",
+            filters={"parent": subscription.name},
+            fields=["plan", "qty", "rate_override", "effective_to"],
+        ):
+            if row.effective_to and getdate(row.effective_to) < getdate(nowdate()):
+                continue
+
+            item, base_rate = frappe.db.get_value(
+                "Merchant Billing Plan", row.plan, ["item", "base_rate"]
+            ) or (None, 0)
+            if item not in agreed:
+                continue
+
+            billing_rate = flt(row.rate_override) or flt(base_rate)
+            contract_rate = agreed[item]
+            drift = contract_rate - billing_rate
+
+            if abs(drift) <= MATERIALITY:
+                continue
+
+            findings.append({
+                "exception_type": "Rate Mismatch",
+                "merchant": subscription.merchant,
+                "expected_amount": contract_rate * flt(row.qty or 1),
+                "actual_amount": billing_rate * flt(row.qty or 1),
+                "source_doctype": "Merchant Subscription",
+                "source_document": subscription.name,
+                "detail": f"{item}: contract {subscription.contract} agrees "
+                          f"{contract_rate:,.2f}, the subscription bills "
+                          f"{billing_rate:,.2f}. Drift of {drift:,.2f} per cycle, "
+                          f"compounding every period until someone opens both records.",
+            })
+
+    return findings
+
 
 def rate_mismatch():
     """Invoiced rate against the rate on the merchant's price list.
@@ -268,7 +339,16 @@ def unmapped_mid():
 
 # --- retraction ---------------------------------------------------------
 
+# Check name -> the exception type it raises. Used to decide which types a run
+# is entitled to retract, and to protect a type when its check threw.
+#
+# contract_drift and rate_mismatch both raise Rate Mismatch. They stay
+# distinguishable because retraction keys on the source document as well as the
+# type, and those differ: a contract drift hangs off the subscription, an
+# invoice mismatch off the invoice. Both must appear here, or a failure in one
+# would let the other retract findings it never evaluated.
 TYPE_BY_CHECK = {
+    "contract_drift": "Rate Mismatch",
     "rate_mismatch": "Rate Mismatch",
     "unapproved_rate": "Unapproved Rate",
     "unbilled_subscription": "Unbilled Subscription",
