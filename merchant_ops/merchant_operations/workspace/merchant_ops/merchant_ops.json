@@ -7,7 +7,7 @@
  "doctype": "Workspace",
  "for_user": "",
  "hide_custom": 0,
- "icon": "organization",
+ "icon": "card",
  "idx": 0,
  "is_hidden": 0,
  "label": "Merchant Ops",
@@ -30,7 +30,8 @@
    "link_to": "merchant-hub",
    "type": "Page",
    "doc_view": "",
-   "color": "Blue"
+   "color": "Blue",
+   "icon": "dashboard"
   },
   {
    "doctype": "Workspace Shortcut",
@@ -38,7 +39,8 @@
    "link_to": "Revenue Exception",
    "type": "DocType",
    "doc_view": "List",
-   "color": "Red"
+   "color": "Red",
+   "icon": "solid-warning"
   },
   {
    "doctype": "Workspace Shortcut",
@@ -46,7 +48,8 @@
    "link_to": "Processor Residual Import",
    "type": "DocType",
    "doc_view": "List",
-   "color": "Orange"
+   "color": "Orange",
+   "icon": "income"
   },
   {
    "doctype": "Workspace Shortcut",
@@ -54,36 +57,42 @@
    "link_to": "Customer",
    "type": "DocType",
    "doc_view": "List",
-   "color": "Green"
+   "color": "Green",
+   "icon": "customer"
   },
   {
    "doctype": "Workspace Shortcut",
    "label": "Sales Invoice",
    "link_to": "Sales Invoice",
    "type": "DocType",
-   "doc_view": "List"
+   "doc_view": "List",
+   "icon": "accounting"
   },
   {
    "doctype": "Workspace Shortcut",
    "label": "Subscriptions",
    "link_to": "Subscription",
    "type": "DocType",
-   "doc_view": "List"
+   "doc_view": "List",
+   "icon": "refresh"
   },
   {
    "doctype": "Workspace Shortcut",
    "label": "Dunning",
    "link_to": "Dunning",
    "type": "DocType",
-   "doc_view": "List"
+   "doc_view": "List",
+   "icon": "notification"
   },
   {
    "doctype": "Workspace Shortcut",
    "label": "Accounts Receivable",
    "link_to": "Accounts Receivable",
    "type": "Report",
-   "doc_view": "Report"
+   "doc_view": "",
+   "icon": "money-coins-1"
   }
  ],
- "title": "Merchant Ops"
+ "title": "Merchant Ops",
+ "type": "Workspace"
 }
