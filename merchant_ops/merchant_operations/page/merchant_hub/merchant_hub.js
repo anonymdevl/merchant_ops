@@ -13,6 +13,43 @@ frappe.pages["merchant-hub"].on_page_load = function (wrapper) {
 	// whenever the page was first opened — which reads as the console being
 	// wrong rather than stale.
 	frappe.pages["merchant-hub"].on_page_show = () => hub.load();
+
+	// Operator tools live in the "..." menu rather than on a button. They are
+	// for rehearsing and for seeing the effect of a correction without waiting
+	// until midnight, not for daily use — and nobody opens a menu during a
+	// walkthrough. The server gates them on developer mode and System Manager;
+	// this only decides whether to draw them.
+	frappe.call({ method: "merchant_ops.api.tools_available" }).then((r) => {
+		if (!r || !r.message) return;
+
+		const run = (label, method, args) => {
+			page.add_menu_item(label, () => {
+				frappe.confirm(__("Run {0} now?", [label]), () => {
+					frappe.call({
+						method,
+						args: args || {},
+						freeze: true,
+						freeze_message: __("Running…"),
+						callback: (res) => {
+							frappe.msgprint({
+								title: label,
+								message: `<pre style="white-space:pre-wrap;margin:0">${
+									frappe.utils.escape_html(JSON.stringify(res.message, null, 2))
+								}</pre>`,
+								indicator: "blue",
+							});
+							hub.load();
+						},
+					});
+				});
+			});
+		};
+
+		run(__("Run leakage sweep"), "merchant_ops.api.run_sweep");
+		run(__("Run collections cycle"), "merchant_ops.api.run_collections");
+		run(__("Run billing"), "merchant_ops.api.run_billing");
+		run(__("Load demo data"), "merchant_ops.api.load_demo_data");
+	});
 };
 
 class MerchantHub {

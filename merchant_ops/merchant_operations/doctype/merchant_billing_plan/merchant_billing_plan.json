@@ -1,21 +1,140 @@
-{"actions":[],"allow_rename":1,"autoname":"field:plan_name","creation":"2026-09-23 10:00:00.000000","doctype":"DocType","editable_grid":1,"engine":"InnoDB",
-"field_order":["plan_name","item","billing_model","cb0","currency","base_rate","usage_metric","prorate","sb1","tiers","sb2","description"],
-"fields":[
- {"fieldname":"plan_name","fieldtype":"Data","label":"Plan Name","reqd":1,"unique":1,"in_list_view":1},
- {"fieldname":"item","fieldtype":"Link","options":"Item","label":"Item","reqd":1,"in_list_view":1,"description":"The invoice line this plan produces. Billing stays custom; the invoice stays standard."},
- {"fieldname":"billing_model","fieldtype":"Select","label":"Billing Model","options":"Flat\nTiered\nVolume\nUsage","default":"Flat","reqd":1,"in_list_view":1},
- {"fieldname":"cb0","fieldtype":"Column Break"},
- {"fieldname":"currency","fieldtype":"Link","options":"Currency","label":"Currency"},
- {"fieldname":"base_rate","fieldtype":"Currency","label":"Base Rate","depends_on":"eval:doc.billing_model=='Flat'","in_list_view":1},
- {"fieldname":"usage_metric","fieldtype":"Select","label":"Usage Metric","options":"\nTransaction Count\nProcessing Volume\nTerminals","depends_on":"eval:['Tiered','Volume','Usage'].includes(doc.billing_model)"},
- {"fieldname":"prorate","fieldtype":"Check","label":"Prorate Partial Periods","default":"1"},
- {"fieldname":"sb1","fieldtype":"Section Break","label":"Tiers","depends_on":"eval:['Tiered','Volume'].includes(doc.billing_model)",
-  "description":"Tiered charges each band at its own rate. Volume finds the band the total falls in and charges every unit at that one rate."},
- {"fieldname":"tiers","fieldtype":"Table","options":"Merchant Billing Tier","label":"Tiers"},
- {"fieldname":"sb2","fieldtype":"Section Break"},
- {"fieldname":"description","fieldtype":"Small Text","label":"Description"}
-],
-"index_web_pages_for_search":1,"links":[],"modified":"2026-09-23 10:00:00.000000","module":"Merchant Operations","name":"Merchant Billing Plan","owner":"Administrator",
-"permissions":[{"role":"Accounts Manager","read":1,"write":1,"create":1,"delete":1,"report":1,"email":1,"share":1,"print":1},
-               {"role":"Accounts User","read":1,"report":1,"email":1,"share":1,"print":1}],
-"sort_field":"modified","sort_order":"DESC","states":[],"track_changes":1}
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:plan_name",
+ "creation": "2026-09-23 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "plan_name",
+  "item",
+  "billing_model",
+  "cb0",
+  "currency",
+  "base_rate",
+  "usage_metric",
+  "prorate",
+  "sb1",
+  "tiers",
+  "sb2",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "plan_name",
+   "fieldtype": "Data",
+   "label": "Plan Name",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "options": "Item",
+   "label": "Item",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "The invoice line this plan produces. Billing stays custom; the invoice stays standard."
+  },
+  {
+   "fieldname": "billing_model",
+   "fieldtype": "Select",
+   "label": "Billing Model",
+   "options": "Flat\nTiered\nVolume\nUsage",
+   "default": "Flat",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "cb0",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "options": "Currency",
+   "label": "Currency"
+  },
+  {
+   "fieldname": "base_rate",
+   "fieldtype": "Currency",
+   "label": "Base Rate",
+   "depends_on": "eval:doc.billing_model=='Flat'",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "usage_metric",
+   "fieldtype": "Select",
+   "label": "Usage Metric",
+   "options": "\nTransaction Count\nProcessing Volume\nTerminals",
+   "depends_on": "eval:['Tiered','Volume','Usage'].includes(doc.billing_model)"
+  },
+  {
+   "fieldname": "prorate",
+   "fieldtype": "Check",
+   "label": "Prorate Partial Periods",
+   "default": "1"
+  },
+  {
+   "fieldname": "sb1",
+   "fieldtype": "Section Break",
+   "label": "Tiers",
+   "depends_on": "eval:['Tiered','Volume'].includes(doc.billing_model)",
+   "description": "Tiered charges each band at its own rate. Volume finds the band the total falls in and charges every unit at that one rate."
+  },
+  {
+   "fieldname": "tiers",
+   "fieldtype": "Table",
+   "options": "Merchant Billing Tier",
+   "label": "Tiers"
+  },
+  {
+   "fieldname": "sb2",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [
+  {
+   "link_doctype": "Merchant Subscription",
+   "link_fieldname": "plan",
+   "group": "Commercial"
+  }
+ ],
+ "modified": "2026-09-23 10:00:00.000000",
+ "module": "Merchant Operations",
+ "name": "Merchant Billing Plan",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "Accounts Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "email": 1,
+   "share": 1,
+   "print": 1
+  },
+  {
+   "role": "Accounts User",
+   "read": 1,
+   "report": 1,
+   "email": 1,
+   "share": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

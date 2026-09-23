@@ -1,33 +1,186 @@
 {
- "actions": [], "allow_rename": 0, "autoname": "naming_series:",
- "creation": "2026-09-23 09:00:00.000000", "doctype": "DocType",
- "editable_grid": 1, "engine": "InnoDB",
- "field_order": ["naming_series","processor","deposit_date","bank_reference","cb0","status","deposit_amount","currency","sb1","allocations","sb2","allocated_total","unallocated","cb1","ledger_total","ledger_variance","sb3","match_log"],
- "fields": [
-  {"fieldname":"naming_series","fieldtype":"Select","label":"Series","options":"DEP-.#####","reqd":1,"hidden":1,"default":"DEP-.#####"},
-  {"fieldname":"processor","fieldtype":"Select","label":"Processor","options":"Fiserv\nTSYS\nElavon\nNorth","reqd":1,"in_list_view":1,"in_standard_filter":1},
-  {"fieldname":"deposit_date","fieldtype":"Date","label":"Deposit Date","reqd":1,"in_list_view":1},
-  {"fieldname":"bank_reference","fieldtype":"Data","label":"Bank Reference","in_list_view":1},
-  {"fieldname":"cb0","fieldtype":"Column Break"},
-  {"fieldname":"status","fieldtype":"Select","label":"Status","options":"Unmatched\nMatched\nVariance\nWritten Off","default":"Unmatched","in_list_view":1,"in_standard_filter":1,"read_only":1},
-  {"fieldname":"deposit_amount","fieldtype":"Currency","label":"Deposit Amount","options":"currency","reqd":1,"in_list_view":1},
-  {"fieldname":"currency","fieldtype":"Link","options":"Currency","label":"Currency","print_hide":1},
-  {"fieldname":"sb1","fieldtype":"Section Break","label":"Statements Covered",
-   "description":"One deposit normally covers several statements. Add each one it is meant to pay."},
-  {"fieldname":"allocations","fieldtype":"Table","options":"Merchant Deposit Allocation","label":"Allocations"},
-  {"fieldname":"sb2","fieldtype":"Section Break","label":"Three-Way Match"},
-  {"fieldname":"allocated_total","fieldtype":"Currency","label":"Allocated Total","read_only":1},
-  {"fieldname":"unallocated","fieldtype":"Currency","label":"Deposit Less Allocated","read_only":1},
-  {"fieldname":"cb1","fieldtype":"Column Break"},
-  {"fieldname":"ledger_total","fieldtype":"Currency","label":"Statement Net Total","read_only":1},
-  {"fieldname":"ledger_variance","fieldtype":"Currency","label":"Statement Less Allocated","read_only":1},
-  {"fieldname":"sb3","fieldtype":"Section Break"},
-  {"fieldname":"match_log","fieldtype":"Small Text","label":"Match Log","read_only":1}
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "naming_series:",
+ "creation": "2026-09-23 09:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "processor",
+  "deposit_date",
+  "bank_reference",
+  "cb0",
+  "status",
+  "deposit_amount",
+  "currency",
+  "sb1",
+  "allocations",
+  "sb2",
+  "allocated_total",
+  "unallocated",
+  "cb1",
+  "ledger_total",
+  "ledger_variance",
+  "sb3",
+  "match_log"
  ],
- "index_web_pages_for_search": 1, "links": [],
- "modified": "2026-09-23 09:00:00.000000", "module": "Merchant Operations",
- "name": "Merchant Deposit", "owner": "Administrator",
- "permissions": [{"role":"Accounts User","read":1,"write":1,"create":1,"delete":1,"report":1,"email":1,"share":1,"print":1},
-                 {"role":"Accounts Manager","read":1,"write":1,"create":1,"delete":1,"report":1,"email":1,"share":1,"print":1}],
- "sort_field": "creation", "sort_order": "DESC", "states": [], "track_changes": 1
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "DEP-.#####",
+   "reqd": 1,
+   "hidden": 1,
+   "default": "DEP-.#####"
+  },
+  {
+   "fieldname": "processor",
+   "fieldtype": "Select",
+   "label": "Processor",
+   "options": "Fiserv\nTSYS\nElavon\nNorth",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "deposit_date",
+   "fieldtype": "Date",
+   "label": "Deposit Date",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "bank_reference",
+   "fieldtype": "Data",
+   "label": "Bank Reference",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "cb0",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Unmatched\nMatched\nVariance\nWritten Off",
+   "default": "Unmatched",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "deposit_amount",
+   "fieldtype": "Currency",
+   "label": "Deposit Amount",
+   "options": "currency",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "options": "Currency",
+   "label": "Currency",
+   "print_hide": 1
+  },
+  {
+   "fieldname": "sb1",
+   "fieldtype": "Section Break",
+   "label": "Statements Covered",
+   "description": "One deposit normally covers several statements. Add each one it is meant to pay."
+  },
+  {
+   "fieldname": "allocations",
+   "fieldtype": "Table",
+   "options": "Merchant Deposit Allocation",
+   "label": "Allocations"
+  },
+  {
+   "fieldname": "sb2",
+   "fieldtype": "Section Break",
+   "label": "Three-Way Match"
+  },
+  {
+   "fieldname": "allocated_total",
+   "fieldtype": "Currency",
+   "label": "Allocated Total",
+   "read_only": 1
+  },
+  {
+   "fieldname": "unallocated",
+   "fieldtype": "Currency",
+   "label": "Deposit Less Allocated",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ledger_total",
+   "fieldtype": "Currency",
+   "label": "Statement Net Total",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ledger_variance",
+   "fieldtype": "Currency",
+   "label": "Statement Less Allocated",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb3",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "match_log",
+   "fieldtype": "Small Text",
+   "label": "Match Log",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [
+  {
+   "link_doctype": "Revenue Exception",
+   "link_fieldname": "source_document",
+   "group": "Controls"
+  }
+ ],
+ "modified": "2026-09-23 09:00:00.000000",
+ "module": "Merchant Operations",
+ "name": "Merchant Deposit",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "Accounts User",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "email": 1,
+   "share": 1,
+   "print": 1
+  },
+  {
+   "role": "Accounts Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "email": 1,
+   "share": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
 }

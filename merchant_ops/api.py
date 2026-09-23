@@ -295,3 +295,58 @@ def _attempts(merchant, limit=5):
                 "return_code", "return_label", "retriable", "next_retry_on", "attempted_on"],
         order_by="creation desc", limit=limit,
     )
+
+
+# --- operator tools ------------------------------------------------------
+#
+# The scheduled jobs run themselves nightly. These let someone run one on
+# demand — to rehearse a demo, or to see the effect of a correction without
+# waiting until midnight.
+#
+# They live behind the console's menu rather than on a button, and they are
+# gated twice: System Manager, and developer mode. That second gate is what
+# keeps them off a client's production instance, where a stray click on
+# "Load demo data" would be a very bad afternoon.
+
+def _tools_allowed():
+    if not frappe.conf.get("developer_mode"):
+        frappe.throw("Operator tools are only available in developer mode.")
+    frappe.only_for("System Manager")
+
+
+@frappe.whitelist()
+def run_sweep():
+    from merchant_ops.detect import run
+    _tools_allowed()
+    return run()
+
+
+@frappe.whitelist()
+def run_billing(period=None):
+    from merchant_ops.billing import run
+    _tools_allowed()
+    return run(period=period)
+
+
+@frappe.whitelist()
+def run_collections():
+    from merchant_ops.collections import escalate_dunning, run_autopay, run_retries
+    _tools_allowed()
+    return {
+        "autopay": run_autopay(),
+        "retries": run_retries(),
+        "dunning": escalate_dunning(),
+    }
+
+
+@frappe.whitelist()
+def load_demo_data():
+    from merchant_ops.demo import load
+    _tools_allowed()
+    load()
+    return {"loaded": True}
+
+
+@frappe.whitelist()
+def tools_available():
+    return bool(frappe.conf.get("developer_mode")) and "System Manager" in frappe.get_roles()

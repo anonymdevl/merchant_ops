@@ -38,14 +38,22 @@ ITEMS = [
     ("Link", "Past Due", "DocType", "Customer", None, 1, {"account_status": "Past Due"}),
     ("Link", "Restricted", "DocType", "Customer", None, 1, {"account_status": "Restricted"}),
 
+    # Ordered as the chain runs: what was agreed, how it is priced, who is
+    # signed up, what they used, what they were billed, what we collected,
+    # what failed, what we chased. Someone new can read the business off the
+    # sidebar, which is worth more than grouping by doctype.
+    ("Section Break", "Commercial", None, None, "sell", 0, None),
+    ("Link", "Contracts", "DocType", "Contract", None, 1, None),
+    ("Link", "Billing Plans", "DocType", "Merchant Billing Plan", None, 1, None),
+    ("Link", "Subscriptions", "DocType", "Merchant Subscription", None, 1, None),
+    ("Link", "Usage", "DocType", "Merchant Usage", None, 1, None),
+
     ("Section Break", "Billing & Collections", None, None, "accounting", 0, None),
     ("Link", "Sales Invoices", "DocType", "Sales Invoice", None, 1, None),
     ("Link", "Overdue", "DocType", "Sales Invoice", None, 1, {"status": "Overdue"}),
-    ("Link", "Subscriptions", "DocType", "Merchant Subscription", None, 1, None),
-    ("Link", "Billing Plans", "DocType", "Merchant Billing Plan", None, 1, None),
-    ("Link", "Usage", "DocType", "Merchant Usage", None, 1, None),
     ("Link", "Payment Attempts", "DocType", "Payment Attempt", None, 1, None),
     ("Link", "Failed Collections", "DocType", "Payment Attempt", None, 1, {"status": "Failed"}),
+    ("Link", "Payments Received", "DocType", "Payment Entry", None, 1, None),
     ("Link", "Dunning", "DocType", "Dunning", None, 1, None),
 
     ("Section Break", "Processor Revenue", None, None, "money-coins-1", 0, None),

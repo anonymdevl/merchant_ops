@@ -1,11 +1,80 @@
-{"actions":[],"creation":"2026-09-23 10:00:00.000000","doctype":"DocType","editable_grid":1,"engine":"InnoDB","istable":1,
-"field_order":["plan","qty","effective_from","effective_to","rate_override","note"],
-"fields":[
- {"fieldname":"plan","fieldtype":"Link","options":"Merchant Billing Plan","label":"Plan","in_list_view":1,"columns":3,"reqd":1},
- {"fieldname":"qty","fieldtype":"Float","label":"Qty","default":"1","in_list_view":1,"columns":1},
- {"fieldname":"effective_from","fieldtype":"Date","label":"From","in_list_view":1,"columns":2},
- {"fieldname":"effective_to","fieldtype":"Date","label":"To","in_list_view":1,"columns":2,"description":"Set this instead of deleting the row, so the change is dated and the history survives."},
- {"fieldname":"rate_override","fieldtype":"Currency","label":"Rate Override","in_list_view":1,"columns":2},
- {"fieldname":"note","fieldtype":"Small Text","label":"Note"}
-],
-"links":[],"modified":"2026-09-23 10:00:00.000000","module":"Merchant Operations","name":"Merchant Subscription Item","owner":"Administrator","permissions":[],"sort_field":"idx","sort_order":"ASC"}
+{
+ "actions": [],
+ "creation": "2026-09-23 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "istable": 1,
+ "field_order": [
+  "plan",
+  "qty",
+  "effective_from",
+  "effective_to",
+  "rate_override",
+  "effective_rate",
+  "note"
+ ],
+ "fields": [
+  {
+   "fieldname": "plan",
+   "fieldtype": "Link",
+   "options": "Merchant Billing Plan",
+   "label": "Plan",
+   "in_list_view": 1,
+   "columns": 3,
+   "reqd": 1
+  },
+  {
+   "fieldname": "qty",
+   "fieldtype": "Float",
+   "label": "Qty",
+   "default": "1",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "From",
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "effective_to",
+   "fieldtype": "Date",
+   "label": "To",
+   "in_list_view": 1,
+   "columns": 1,
+   "description": "Set this instead of deleting the row, so the change is dated and the history survives."
+  },
+  {
+   "fieldname": "rate_override",
+   "fieldtype": "Currency",
+   "label": "Agreed Override",
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "effective_rate",
+   "fieldtype": "Currency",
+   "label": "Billing Rate",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 2,
+   "description": "The rate this row actually bills: the override if set, otherwise the plan's own rate."
+  },
+  {
+   "fieldname": "note",
+   "fieldtype": "Small Text",
+   "label": "Note"
+  }
+ ],
+ "links": [],
+ "modified": "2026-09-23 10:00:00.000000",
+ "module": "Merchant Operations",
+ "name": "Merchant Subscription Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "idx",
+ "sort_order": "ASC"
+}

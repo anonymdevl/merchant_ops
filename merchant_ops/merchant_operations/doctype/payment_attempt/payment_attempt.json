@@ -189,7 +189,18 @@
   }
  ],
  "index_web_pages_for_search": 1,
- "links": [],
+ "links": [
+  {
+   "link_doctype": "Revenue Exception",
+   "link_fieldname": "source_document",
+   "group": "Controls"
+  },
+  {
+   "link_doctype": "Gateway Request Log",
+   "link_fieldname": "reference_name",
+   "group": "Trail"
+  }
+ ],
  "modified": "2026-09-23 09:00:00.000000",
  "module": "Merchant Operations",
  "name": "Payment Attempt",

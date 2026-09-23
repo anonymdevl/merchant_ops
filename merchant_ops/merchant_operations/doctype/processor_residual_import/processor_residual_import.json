@@ -153,7 +153,18 @@
   }
  ],
  "index_web_pages_for_search": 1,
- "links": [],
+ "links": [
+  {
+   "link_doctype": "Revenue Exception",
+   "link_fieldname": "source_document",
+   "group": "Controls"
+  },
+  {
+   "link_doctype": "Merchant Deposit",
+   "link_fieldname": "residual_import",
+   "group": "Settlement"
+  }
+ ],
  "modified": "2026-09-22 17:00:00.000000",
  "modified_by": "Administrator",
  "module": "Merchant Operations",

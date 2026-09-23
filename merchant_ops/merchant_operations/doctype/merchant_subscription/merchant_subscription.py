@@ -2,7 +2,7 @@ import calendar
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import add_months, getdate, nowdate
+from frappe.utils import add_months, flt, getdate, nowdate
 
 
 class MerchantSubscription(Document):
@@ -18,12 +18,45 @@ class MerchantSubscription(Document):
 
     def validate(self):
         self._date_the_rows()
+        self._price_the_rows()
         self._set_next_billing_date()
 
     def _date_the_rows(self):
         for row in self.items:
             if not row.effective_from:
                 row.effective_from = self.start_date
+
+    def _price_the_rows(self):
+        """Shows what each row bills, and what the subscription costs a cycle.
+
+        A subscription whose form shows no number is a subscription nobody can
+        check. The rate lives on the plan unless an override was agreed, and
+        without resolving that here the grid shows a blank column and the
+        reader has to open the plan to find out what is being charged.
+
+        Metered plans are deliberately excluded from the total rather than
+        guessed at. Their price is whatever the usage turns out to be, and a
+        figure that looks like a commitment but is not would be worse than no
+        figure at all.
+        """
+        total, metered = 0.0, []
+
+        for row in self.items:
+            model, base_rate = frappe.db.get_value(
+                "Merchant Billing Plan", row.plan, ["billing_model", "base_rate"]
+            ) or (None, 0)
+
+            if model == "Flat":
+                row.effective_rate = flt(row.rate_override) or flt(base_rate)
+                total += flt(row.effective_rate) * flt(row.qty or 1)
+            else:
+                row.effective_rate = 0
+                metered.append(f"{row.plan} ({model})")
+
+        self.recurring_total = total
+        self.metered_note = (
+            ", ".join(metered) + " — priced from usage at billing time" if metered else None
+        )
 
     def _set_next_billing_date(self):
         if self.status != "Active":
@@ -32,7 +65,16 @@ class MerchantSubscription(Document):
 
         anchor = getdate(self.last_billed_period + "-01") if self.last_billed_period else None
         base = add_months(anchor, 1) if anchor else getdate(self.start_date)
-        self.next_billing_date = billing_date_for(base, self.billing_day)
+        due = billing_date_for(base, self.billing_day)
+
+        # Roll forward past any date already behind us. A subscription that
+        # started in March and has never been billed should say when it bills
+        # next, not print a date six months in the past and look broken.
+        today = getdate(nowdate())
+        while due < today:
+            due = billing_date_for(add_months(due, 1), self.billing_day)
+
+        self.next_billing_date = due
 
     def plans_for(self, period_start, period_end):
         """Rows in force at any point in the period, with the dates they covered.
