@@ -16,6 +16,10 @@ import frappe
 from frappe.utils import add_days, flt, nowdate
 from frappe.utils.file_manager import save_file
 
+# Eight merchants, deliberately one register: US small business, name plus
+# trade. Two of them — Cedarbrook and Tidewater — exist so the Elavon statement
+# maps cleanly, which is what makes Harbour Point's absence from that same
+# statement mean something.
 MERCHANTS = [
     ("Northside Coffee Group", "MID-884201", "Fiserv", "Active", "Standard"),
     ("Delgado Auto Service", "MID-884377", "TSYS", "Past Due", "Elevated"),
@@ -23,6 +27,8 @@ MERCHANTS = [
     ("Vela Fitness Studios", "MID-884630", "Fiserv", "Restricted", "Elevated"),
     ("Kestrel Hardware Co", "MID-884711", "North", "Active", "Standard"),
     ("Brightline Pet Clinic", "MID-884890", "TSYS", "Active", "Low"),
+    ("Cedarbrook Print Works", "MID-884998", "Elavon", "Active", "Standard"),
+    ("Tidewater Supply Co", "MID-885220", "Elavon", "Active", "Low"),
 ]
 
 # Statement files shipped with the app. Totals are not listed here on purpose:
