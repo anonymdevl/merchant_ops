@@ -14,6 +14,9 @@
   "imported_on",
   "sb1",
   "statement_file",
+  "template_hint",
+  "rows_section",
+  "rows",
   "sb2",
   "rows_imported",
   "rows_unmapped",
@@ -21,7 +24,8 @@
   "gross_residual",
   "net_residual",
   "sb3",
-  "notes"
+  "notes",
+  "import_log"
  ],
  "fields": [
   {
@@ -80,6 +84,23 @@
    "label": "Statement File"
   },
   {
+   "fieldname": "template_hint",
+   "fieldtype": "HTML",
+   "label": "Template",
+   "options": "<p class=\"text-muted small\">Attach the residual statement exported from the processor portal, then save. Column headings are matched case-insensitively and common processor aliases are accepted. Templates: <a href=\"/assets/merchant_ops/samples/residual-statement-template.csv\" download>blank template</a> &middot; <a href=\"/assets/merchant_ops/samples/fiserv-2026-08-residual.csv\" download>worked example</a></p>"
+  },
+  {
+   "fieldname": "rows_section",
+   "fieldtype": "Section Break",
+   "label": "Statement Rows"
+  },
+  {
+   "fieldname": "rows",
+   "fieldtype": "Table",
+   "options": "Processor Residual Row",
+   "label": "Rows"
+  },
+  {
    "fieldname": "sb2",
    "fieldtype": "Section Break",
    "label": "Import Result"
@@ -87,14 +108,16 @@
   {
    "fieldname": "rows_imported",
    "fieldtype": "Int",
-   "label": "Rows Imported"
+   "label": "Rows Imported",
+   "read_only": 1
   },
   {
    "fieldname": "rows_unmapped",
    "fieldtype": "Int",
    "label": "Rows Unmapped",
    "in_list_view": 1,
-   "description": "Rows whose MID does not match any merchant. Each becomes an exception."
+   "description": "Rows whose MID does not match any merchant. Each becomes an exception.",
+   "read_only": 1
   },
   {
    "fieldname": "cb1",
@@ -104,12 +127,14 @@
    "fieldname": "gross_residual",
    "fieldtype": "Currency",
    "label": "Gross Residual",
-   "in_list_view": 1
+   "in_list_view": 1,
+   "read_only": 1
   },
   {
    "fieldname": "net_residual",
    "fieldtype": "Currency",
-   "label": "Net Residual After Fees"
+   "label": "Net Residual After Fees",
+   "read_only": 1
   },
   {
    "fieldname": "sb3",
@@ -119,6 +144,12 @@
    "fieldname": "notes",
    "fieldtype": "Small Text",
    "label": "Notes"
+  },
+  {
+   "fieldname": "import_log",
+   "fieldtype": "Small Text",
+   "label": "Import Log",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,

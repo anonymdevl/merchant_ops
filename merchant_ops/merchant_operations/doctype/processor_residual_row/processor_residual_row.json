@@ -1,0 +1,31 @@
+{
+ "actions": [],
+ "creation": "2026-09-22 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": ["mid","dba_name","merchant","mapped","sales_volume","sales_count","income","expense","net_residual","split_pct","agent_code","row_note"],
+ "fields": [
+  {"fieldname":"mid","fieldtype":"Data","in_list_view":1,"label":"MID","columns":2,"reqd":1},
+  {"fieldname":"dba_name","fieldtype":"Data","in_list_view":1,"label":"DBA Name","columns":2},
+  {"fieldname":"merchant","fieldtype":"Link","options":"Customer","in_list_view":1,"label":"Merchant","columns":2},
+  {"fieldname":"mapped","fieldtype":"Check","label":"Mapped","in_list_view":1,"columns":1,"read_only":1},
+  {"fieldname":"sales_volume","fieldtype":"Currency","label":"Sales Volume"},
+  {"fieldname":"sales_count","fieldtype":"Int","label":"Sales Count"},
+  {"fieldname":"income","fieldtype":"Currency","label":"Income"},
+  {"fieldname":"expense","fieldtype":"Currency","label":"Expense"},
+  {"fieldname":"net_residual","fieldtype":"Currency","in_list_view":1,"label":"Net Residual","columns":2},
+  {"fieldname":"split_pct","fieldtype":"Percent","label":"Split %"},
+  {"fieldname":"agent_code","fieldtype":"Data","label":"Agent / Office Code"},
+  {"fieldname":"row_note","fieldtype":"Small Text","label":"Note"}
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-09-22 10:00:00.000000",
+ "module": "Merchant Operations",
+ "name": "Processor Residual Row",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "idx",
+ "sort_order": "ASC"
+}

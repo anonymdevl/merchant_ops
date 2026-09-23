@@ -31,7 +31,7 @@ add_to_apps_screen = [
 # and hooks.py is imported on every request.
 #
 # BUMP THIS whenever portal.css, portal.js or hub.css changes.
-ASSET_VERSION = "12"
+ASSET_VERSION = "13"
 
 web_include_css = f"/assets/merchant_ops/css/portal.css?v={ASSET_VERSION}"
 web_include_js = f"/assets/merchant_ops/js/portal.js?v={ASSET_VERSION}"
@@ -50,3 +50,13 @@ fixtures = [
 ]
 
 after_install = "merchant_ops.install.after_install"
+
+# The sweep is the only thing in this app that runs unattended. It is read-only
+# against ERPNext documents: it compares layers and records what disagrees, and
+# never amends an invoice, a payment or a ledger entry. Corrections stay a human
+# decision made from the exception record.
+scheduler_events = {
+    "daily_long": [
+        "merchant_ops.detect.run",
+    ],
+}
