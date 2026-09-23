@@ -1,0 +1,15 @@
+{"actions":[],"allow_rename":0,"autoname":"naming_series:","creation":"2026-09-23 10:00:00.000000","doctype":"DocType","editable_grid":1,"engine":"InnoDB",
+"field_order":["naming_series","merchant","period","cb0","metric","quantity","source"],
+"fields":[
+ {"fieldname":"naming_series","fieldtype":"Select","label":"Series","options":"USE-.#####","hidden":1,"default":"USE-.#####"},
+ {"fieldname":"merchant","fieldtype":"Link","options":"Customer","label":"Merchant","reqd":1,"in_list_view":1,"in_standard_filter":1},
+ {"fieldname":"period","fieldtype":"Data","label":"Period","reqd":1,"in_list_view":1,"in_standard_filter":1,"description":"YYYY-MM, matching the statement period."},
+ {"fieldname":"cb0","fieldtype":"Column Break"},
+ {"fieldname":"metric","fieldtype":"Select","label":"Metric","options":"Transaction Count\nProcessing Volume\nTerminals","reqd":1,"in_list_view":1},
+ {"fieldname":"quantity","fieldtype":"Float","label":"Quantity","in_list_view":1},
+ {"fieldname":"source","fieldtype":"Data","label":"Source","read_only":1,"description":"Where the figure came from, so a disputed charge can be traced back."}
+],
+"index_web_pages_for_search":1,"links":[],"modified":"2026-09-23 10:00:00.000000","module":"Merchant Operations","name":"Merchant Usage","owner":"Administrator",
+"permissions":[{"role":"Accounts User","read":1,"write":1,"create":1,"delete":1,"report":1,"email":1,"share":1,"print":1},
+               {"role":"Accounts Manager","read":1,"write":1,"create":1,"delete":1,"report":1,"email":1,"share":1,"print":1}],
+"sort_field":"creation","sort_order":"DESC","states":[]}

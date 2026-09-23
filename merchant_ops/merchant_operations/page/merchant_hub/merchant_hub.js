@@ -63,13 +63,13 @@ class MerchantHub {
 				label: __("Outstanding AR"), value: this.fmt(k.outstanding),
 				sub: __("{0} overdue", [this.fmt(k.overdue)]),
 				tone: k.overdue > 0 ? "warn" : "",
-				route: () => frappe.set_route("query-report", "Accounts Receivable"),
+				route: () => frappe.set_route("merchant-focus", "overdue"),
 			},
 			{
 				label: __("Value at Risk"), value: this.fmt(k.value_at_risk),
 				sub: __("across {0} open exceptions", [k.open_exceptions]),
 				tone: k.value_at_risk > 0 ? "bad" : "good",
-				route: () => frappe.set_route("List", "Revenue Exception", { status: ["!=", "Resolved"] }),
+				route: () => frappe.set_route("merchant-focus", "at_risk"),
 			},
 			{
 				label: __("Residual Revenue"), value: this.fmt(k.residual),
@@ -85,13 +85,13 @@ class MerchantHub {
 				label: __("Past Due"), value: k.past_due_merchants,
 				sub: __("in collections"),
 				tone: k.past_due_merchants ? "warn" : "good",
-				route: () => frappe.set_route("List", "Customer", { account_status: "Past Due" }),
+				route: () => frappe.set_route("merchant-focus", "past_due"),
 			},
 			{
 				label: __("Restricted"), value: k.restricted_merchants,
 				sub: __("blocked from new activity"),
 				tone: k.restricted_merchants ? "bad" : "good",
-				route: () => frappe.set_route("List", "Customer", { account_status: "Restricted" }),
+				route: () => frappe.set_route("merchant-focus", "restricted"),
 			},
 		];
 
@@ -184,7 +184,7 @@ class MerchantHub {
 		const $wrap = $("<div></div>").append($table);
 		$(`<div class="mo-panel-foot">${__("View all exceptions")} &rarr;</div>`)
 			.appendTo($wrap)
-			.on("click", () => frappe.set_route("List", "Revenue Exception", { status: ["!=", "Resolved"] }));
+			.on("click", () => frappe.set_route("merchant-focus", "at_risk"));
 
 		$col.append(this.panel(__("Revenue exceptions"), __("largest first"), $wrap));
 		return $col;

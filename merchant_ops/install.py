@@ -39,6 +39,30 @@ PRICING_FIELDS = {
     ]
 }
 
+# The billing run has to be able to prove which subscription and period an
+# invoice came from, otherwise re-running it safely is guesswork and a disputed
+# charge cannot be traced. Two fields on the standard doctype, no override.
+INVOICE_FIELDS = {
+    "Sales Invoice": [
+        {
+            "fieldname": "mo_billing_section", "label": "Merchant Billing",
+            "fieldtype": "Section Break", "insert_after": "due_date",
+            "collapsible": 1,
+        },
+        {
+            "fieldname": "merchant_subscription", "label": "Merchant Subscription",
+            "fieldtype": "Link", "options": "Merchant Subscription",
+            "insert_after": "mo_billing_section", "read_only": 1,
+            "in_standard_filter": 1,
+        },
+        {
+            "fieldname": "billing_period", "label": "Billing Period",
+            "fieldtype": "Data", "insert_after": "merchant_subscription",
+            "read_only": 1, "in_standard_filter": 1,
+        },
+    ]
+}
+
 CUSTOMER_FIELDS = {
     "Customer": [
         {
@@ -86,6 +110,7 @@ CUSTOMER_FIELDS = {
 def after_install():
     create_custom_fields(CUSTOMER_FIELDS, update=True)
     create_custom_fields(PRICING_FIELDS, update=True)
+    create_custom_fields(INVOICE_FIELDS, update=True)
     _label_customer_as_merchant()
     _build_sidebar()
     frappe.db.commit()

@@ -31,7 +31,7 @@ add_to_apps_screen = [
 # and hooks.py is imported on every request.
 #
 # BUMP THIS whenever portal.css, portal.js or hub.css changes.
-ASSET_VERSION = "17"
+ASSET_VERSION = "18"
 
 web_include_css = f"/assets/merchant_ops/css/portal.css?v={ASSET_VERSION}"
 web_include_js = f"/assets/merchant_ops/js/portal.js?v={ASSET_VERSION}"
@@ -41,7 +41,7 @@ app_include_css = f"/assets/merchant_ops/css/hub.css?v={ASSET_VERSION}"
 fixtures = [
     {
         "dt": "Custom Field",
-        "filters": [["dt", "in", ["Customer", "Item Price"]],
+        "filters": [["dt", "in", ["Customer", "Item Price", "Sales Invoice"]],
                     ["module", "in", [None, "Merchant Operations"]]],
     },
     {
@@ -65,6 +65,9 @@ after_migrate = "merchant_ops.install.after_migrate"
 # output before creating anything.
 scheduler_events = {
     "daily": [
+        # Billing first: an invoice raised this morning is what AutoPay
+        # presents against, and what the ladder ages from.
+        "merchant_ops.billing.run",
         # Present debits that have come due, then move overdue invoices up the
         # ladder. Order matters: a collection that succeeds this morning should
         # not also receive a dunning notice this afternoon.

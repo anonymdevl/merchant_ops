@@ -272,3 +272,62 @@ tr.clickable:hover { background: var(--mo-page); }
 @media (prefers-reduced-motion: reduce) {
 	.mo-hub * { transition: none !important; }
 }
+
+/* --- merchant focus ------------------------------------------------- */
+.mo-focus .mo-head-blurb { margin-top: 4px; max-width: 46rem; }
+.mo-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+.mo-card {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  box-shadow: var(--mo-shadow);
+}
+.mo-card-head {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 16px; padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+.mo-card-title { font-weight: 600; font-size: 1.02rem; }
+.mo-card-figure { text-align: right; white-space: nowrap; }
+.mo-figure { font-size: 1.15rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.mo-sub { margin-top: 14px; }
+.mo-sub-title {
+  font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-muted, #7c858e); margin-bottom: 6px;
+}
+.mo-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.mo-table td {
+  padding: 6px 10px 6px 0; font-size: 0.88rem;
+  border-bottom: 1px solid var(--border-color, #f1f3f5);
+}
+.mo-table td:nth-child(3), .mo-table td:last-child { text-align: right; }
+.mo-table tr:last-child td { border-bottom: 0; }
+
+.mo-age {
+  background: #fdecea; color: #a1332b; border-radius: 9px;
+  padding: 1px 7px; font-size: 0.76rem; font-weight: 600;
+}
+.mo-ok { color: #2f6a4c; }
+.mo-bad { color: #a1332b; }
+.mo-pill {
+  display: inline-block; padding: 2px 9px; border-radius: 10px;
+  font-size: 0.74rem; font-weight: 600; letter-spacing: 0.04em;
+}
+.mo-pill.good { background: #e3f0e8; color: #2f6a4c; }
+.mo-pill.warn { background: #fdf3e2; color: #8a5f1c; }
+.mo-pill.bad  { background: #fdecea; color: #a1332b; }
+
+.mo-empty {
+  padding: 40px 0; text-align: center;
+  color: var(--text-muted, #7c858e); font-size: 0.95rem;
+}
+
+@media (max-width: 900px) {
+  .mo-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mo-card-head { flex-direction: column; }
+  .mo-card-figure { text-align: left; }
+}

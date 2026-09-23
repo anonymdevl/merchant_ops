@@ -40,7 +40,9 @@ ITEMS = [
     ("Section Break", "Billing & Collections", None, None, "accounting", 0, None),
     ("Link", "Sales Invoices", "DocType", "Sales Invoice", None, 1, None),
     ("Link", "Overdue", "DocType", "Sales Invoice", None, 1, {"status": "Overdue"}),
-    ("Link", "Subscriptions", "DocType", "Subscription", None, 1, None),
+    ("Link", "Subscriptions", "DocType", "Merchant Subscription", None, 1, None),
+    ("Link", "Billing Plans", "DocType", "Merchant Billing Plan", None, 1, None),
+    ("Link", "Usage", "DocType", "Merchant Usage", None, 1, None),
     ("Link", "Payment Attempts", "DocType", "Payment Attempt", None, 1, None),
     ("Link", "Failed Collections", "DocType", "Payment Attempt", None, 1, {"status": "Failed"}),
     ("Link", "Dunning", "DocType", "Dunning", None, 1, None),
@@ -56,12 +58,15 @@ ITEMS = [
     ("Link", "Revenue Exceptions", "DocType", "Revenue Exception", None, 1, None),
     ("Link", "Open Exceptions", "DocType", "Revenue Exception", None, 1, {"status": "Open"}),
     ("Link", "Approved Pricing", "DocType", "Item Price", None, 1, {"approval_status": "Approved"}),
+    ("Link", "Gateway Log", "DocType", "Gateway Request Log", None, 1, None),
 
     ("Section Break", "Reports", None, None, "table", 0, None),
     ("Link", "Accounts Receivable", "Report", "Accounts Receivable", None, 1, None),
     ("Link", "AR Summary", "Report", "Accounts Receivable Summary", None, 1, None),
 
-    ("Link", "Login Page", "DocType", "Merchant Portal Settings", "settings", 0, None),
+    ("Section Break", "Settings", None, None, "settings", 0, None),
+    ("Link", "Login Page", "DocType", "Merchant Portal Settings", None, 1, None),
+    ("Link", "Gateway", "DocType", "Gateway Settings", None, 1, None),
 ]
 
 

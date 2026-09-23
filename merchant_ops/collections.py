@@ -69,17 +69,32 @@ def run_autopay():
 
 
 def run_retries():
-    """Report re-presentments that have come round.
+    """Presents every scheduled attempt that has come round.
 
-    Nothing is presented here because there is no gateway on this instance. The
-    job exists so the schedule is visible and the count is real.
+    First presentments and re-presentments go through the same path, because
+    the gateway does not care which it is and a separate route for retries is
+    a second place for a duplicate to originate.
     """
+    from merchant_ops.gateway import collect
+
     due = frappe.get_all(
         "Payment Attempt",
         filters={"status": "Scheduled", "scheduled_on": ["<=", nowdate()]},
-        fields=["name", "sales_invoice", "attempt_no"],
+        pluck="name",
     )
-    return {"due_for_presentment": len(due), "attempts": [d.name for d in due]}
+
+    presented, failed = 0, 0
+    for name in due:
+        try:
+            outcome = collect(name)
+            presented += 1
+            if outcome.get("status") == "Failed":
+                failed += 1
+        except Exception:
+            frappe.log_error(title=f"merchant_ops: presentment failed for {name}")
+
+    frappe.db.commit()
+    return {"presented": presented, "declined": failed}
 
 
 def settle(attempt, outcome="Succeeded", return_code=None, reference=None):
