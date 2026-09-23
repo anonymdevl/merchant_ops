@@ -67,11 +67,42 @@
 	align-items: stretch;
 }
 
-/* Before the panel lands, the single visible pane is the only flex item and
- * would grow to the full width. Holding it off the brand side for exactly as
- * long as the panel is missing keeps the page from jumping when JS arrives. */
-#page-login .page_content:not(:has(.mo-brand-panel)) > * {
-	margin-left: 58%;
+/* THE WHITE FLASH BEFORE THE BRAND COLOUR
+ *
+ * The panel is DOM that portal.js inserts. Between first paint and that script
+ * running there is nothing branded on the page at all. No amount of tuning the
+ * panel's own CSS removes that, because the panel does not exist yet.
+ *
+ * So the split is painted into the CONTAINER from the stylesheet, which
+ * arrives with the first paint. The panel's own background covers this exactly
+ * when it appears, so nothing moves and nothing changes colour.
+ *
+ * 58% is .mo-brand-panel's flex-basis. If that changes, this changes with it.
+ * The colour is the FALLBACK: portal.js sets --mo-primary from settings at the
+ * same moment it inserts the panel, so a deployment with a different primary
+ * gets a brief default rather than a brief white page.
+ */
+@media (min-width: 901px) {
+	#page-login .page_content {
+		background-image: linear-gradient(
+			to right,
+			var(--mo-primary) 0 58%,
+			/* transparent, not the surface colour: the surface and its artwork are
+			 * painted by #page-login underneath, and an opaque half here would hide
+			 * the pattern on the very side that wants it. */
+			transparent 58%
+		);
+	}
+
+	/* Frappe renders one pane at a time, so the single visible pane is the only
+	 * flex item and grows to the full width, laying its own surface straight
+	 * over the gradient. Hold it off the brand side for exactly as long as the
+	 * panel is missing. :has() asks the question the situation poses — is the
+	 * panel here yet — rather than timing it or tagging the page from script.
+	 * Nothing moves when the panel lands: the pane is flex 1 1 42% either way. */
+	#page-login .page_content:not(:has(.mo-brand-panel)) > * {
+		margin-left: 58%;
+	}
 }
 
 /* ---------------------------------------------------------- brand panel -- */
@@ -93,38 +124,7 @@
 	background-position: center;
 }
 
-/* Artwork.
- *
- * A tiled SVG used as a MASK rather than a background image, so the marks are
- * painted in the brand colour and follow it when a deployment changes it. A
- * background-image would bake one colour into the file.
- *
- * On ::before so it sits at z-index -1 inside the panel — above the brand
- * colour, below the logo, headline and stat strip, all of which are lifted to
- * z-index 1.
- */
-.mo-brand-panel::before {
-	content: "";
-	position: absolute;
-	inset: 0;
-	/* Zero, not -1. A negative z-index on a pseudo-element puts it behind its
-	 * own parent's background, where this was invisible. The panel's content
-	 * is lifted to 1, so 0 sits between the brand colour and the text. */
-	z-index: 0;
-	pointer-events: none;
-	background-color: var(--mo-on-primary);
-	opacity: 0.07;
-	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='540' height='540' viewBox='0 0 540 540'%3E%3Cdefs%3E%3Cg id='card'%3E%3Crect x='2' y='5' width='20' height='14' rx='2.5'/%3E%3Cpath d='M2 10h20M5.5 14.5h4'/%3E%3C/g%3E%3Cg id='coin'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Cpath d='M12 7.2v9.6M14.6 9.4a2.6 2.6 0 0 0-2.6-1.5c-1.6 0-2.6.9-2.6 2s1 1.8 2.6 2.1 2.7 .9 2.7 2.1-1.1 2-2.7 2a2.7 2.7 0 0 1-2.7-1.6'/%3E%3C/g%3E%3Cg id='bank'%3E%3Cpath d='M3 9.5 12 4l9 5.5'/%3E%3Cpath d='M4.5 9.5V18M9.5 9.5V18M14.5 9.5V18M19.5 9.5V18'/%3E%3Cpath d='M2.5 20.5h19'/%3E%3C/g%3E%3Cg id='receipt'%3E%3Cpath d='M5 3h14v18l-2.3-1.6-2.4 1.6-2.3-1.6-2.4 1.6L7.3 19.4 5 21z'/%3E%3Cpath d='M8.6 8h6.8M8.6 12h6.8'/%3E%3C/g%3E%3Cg id='chart'%3E%3Cpath d='M4 4v16h16'/%3E%3Cpath d='M7.5 15.5l3.4-4.2 3 2.4 4.1-5.6'/%3E%3Cpath d='M18 8.1h-2.6M18 8.1v2.6'/%3E%3C/g%3E%3Cg id='wallet'%3E%3Crect x='2.5' y='6' width='19' height='13' rx='2.5'/%3E%3Cpath d='M2.5 10h19'/%3E%3Ccircle cx='17.5' cy='14' r='1.3'/%3E%3C/g%3E%3Cg id='vault'%3E%3Crect x='3' y='4' width='18' height='16' rx='2.5'/%3E%3Ccircle cx='12' cy='12' r='4.2'/%3E%3Cpath d='M12 7.8v1.2M12 15v1.2M7.8 12h1.2M15 12h1.2'/%3E%3C/g%3E%3Cg id='note'%3E%3Crect x='2' y='6.5' width='20' height='11' rx='2'/%3E%3Ccircle cx='12' cy='12' r='2.6'/%3E%3Cpath d='M5.6 12h.01M18.4 12h.01'/%3E%3C/g%3E%3Cg id='percent'%3E%3Ccircle cx='7.5' cy='7.5' r='2.8'/%3E%3Ccircle cx='16.5' cy='16.5' r='2.8'/%3E%3Cpath d='M19 5 5 19'/%3E%3C/g%3E%3Cg id='calc'%3E%3Crect x='4.5' y='2.5' width='15' height='19' rx='2.5'/%3E%3Crect x='7.5' y='5.5' width='9' height='3.5' rx='1'/%3E%3Cpath d='M8.2 13h.01M12 13h.01M15.8 13h.01M8.2 17h.01M12 17h.01M15.8 17h.01'/%3E%3C/g%3E%3Cg id='pos'%3E%3Crect x='5' y='2.5' width='14' height='19' rx='2.5'/%3E%3Crect x='7.8' y='5.2' width='8.4' height='4.6' rx='1'/%3E%3Cpath d='M8.6 13.4h.01M12 13.4h.01M15.4 13.4h.01M8.6 17h.01M12 17h.01M15.4 17h.01'/%3E%3C/g%3E%3Cg id='shield'%3E%3Cpath d='M12 2.8 4.6 6v6.1c0 4.4 3.1 7.6 7.4 9.1 4.3-1.5 7.4-4.7 7.4-9.1V6z'/%3E%3Cpath d='M8.9 12.1l2.2 2.2 4-4.4'/%3E%3C/g%3E%3Cg id='arrows'%3E%3Cpath d='M4 8.5h13M13.5 5l3.5 3.5-3.5 3.5'/%3E%3Cpath d='M20 15.5H7M10.5 12 7 15.5 10.5 19'/%3E%3C/g%3E%3C/defs%3E%3Cg fill='none' stroke='%23000' stroke-width='1.35' stroke-linecap='round' stroke-linejoin='round'%3E%3Cuse href='%23card' transform='translate(50.6 58.3) rotate(49.2) scale(1.16) translate(-12 -12)'/%3E%3Cuse href='%23card' transform='translate(590.6 58.3) rotate(49.2) scale(1.16) translate(-12 -12)'/%3E%3Cuse href='%23card' transform='translate(50.6 598.3) rotate(49.2) scale(1.16) translate(-12 -12)'/%3E%3Cuse href='%23coin' transform='translate(162.6 60.3) rotate(-36.6) scale(1.18) translate(-12 -12)'/%3E%3Cuse href='%23bank' transform='translate(279.4 75.1) rotate(-47.1) scale(1.11) translate(-12 -12)'/%3E%3Cuse href='%23receipt' transform='translate(348.5 76.3) rotate(22.4) scale(1.01) translate(-12 -12)'/%3E%3Cuse href='%23chart' transform='translate(520.7 87.5) rotate(17.9) scale(1.22) translate(-12 -12)'/%3E%3Cuse href='%23chart' transform='translate(-19.3 87.5) rotate(17.9) scale(1.22) translate(-12 -12)'/%3E%3Cuse href='%23wallet' transform='translate(29.3 127.1) rotate(3.3) scale(1.02) translate(-12 -12)'/%3E%3Cuse href='%23wallet' transform='translate(569.3 127.1) rotate(3.3) scale(1.02) translate(-12 -12)'/%3E%3Cuse href='%23vault' transform='translate(139.7 143.4) rotate(-54.5) scale(1.16) translate(-12 -12)'/%3E%3Cuse href='%23note' transform='translate(265.7 186.7) rotate(2.2) scale(1.22) translate(-12 -12)'/%3E%3Cuse href='%23percent' transform='translate(378.0 173.7) rotate(-4.9) scale(1.10) translate(-12 -12)'/%3E%3Cuse href='%23calc' transform='translate(521.8 197.7) rotate(39.5) scale(1.25) translate(-12 -12)'/%3E%3Cuse href='%23calc' transform='translate(-18.2 197.7) rotate(39.5) scale(1.25) translate(-12 -12)'/%3E%3Cuse href='%23pos' transform='translate(40.7 250.5) rotate(-24.5) scale(1.02) translate(-12 -12)'/%3E%3Cuse href='%23pos' transform='translate(580.7 250.5) rotate(-24.5) scale(1.02) translate(-12 -12)'/%3E%3Cuse href='%23shield' transform='translate(181.2 262.8) rotate(40.2) scale(1.14) translate(-12 -12)'/%3E%3Cuse href='%23arrows' transform='translate(303.0 295.0) rotate(-57.9) scale(1.07) translate(-12 -12)'/%3E%3Cuse href='%23card' transform='translate(407.5 267.8) rotate(55.7) scale(1.14) translate(-12 -12)'/%3E%3Cuse href='%23coin' transform='translate(455.3 279.3) rotate(32.3) scale(1.09) translate(-12 -12)'/%3E%3Cuse href='%23bank' transform='translate(24.3 365.9) rotate(53.8) scale(1.27) translate(-12 -12)'/%3E%3Cuse href='%23bank' transform='translate(564.3 365.9) rotate(53.8) scale(1.27) translate(-12 -12)'/%3E%3Cuse href='%23receipt' transform='translate(134.5 359.7) rotate(-46.3) scale(1.02) translate(-12 -12)'/%3E%3Cuse href='%23chart' transform='translate(291.4 354.8) rotate(6.9) scale(1.16) translate(-12 -12)'/%3E%3Cuse href='%23wallet' transform='translate(355.7 394.7) rotate(-42.8) scale(1.23) translate(-12 -12)'/%3E%3Cuse href='%23vault' transform='translate(458.4 372.3) rotate(-33.3) scale(1.09) translate(-12 -12)'/%3E%3Cuse href='%23note' transform='translate(87.9 507.8) rotate(-22.7) scale(1.31) translate(-12 -12)'/%3E%3Cuse href='%23note' transform='translate(87.9 -32.2) rotate(-22.7) scale(1.31) translate(-12 -12)'/%3E%3Cuse href='%23percent' transform='translate(141.2 478.4) rotate(41.1) scale(1.22) translate(-12 -12)'/%3E%3Cuse href='%23calc' transform='translate(241.2 521.2) rotate(-33.3) scale(1.09) translate(-12 -12)'/%3E%3Cuse href='%23calc' transform='translate(241.2 -18.8) rotate(-33.3) scale(1.09) translate(-12 -12)'/%3E%3Cuse href='%23pos' transform='translate(397.6 473.7) rotate(-23.6) scale(1.03) translate(-12 -12)'/%3E%3Cuse href='%23shield' transform='translate(456.5 492.0) rotate(-29.8) scale(1.21) translate(-12 -12)'/%3E%3Cuse href='%23shield' transform='translate(456.5 -48.0) rotate(-29.8) scale(1.21) translate(-12 -12)'/%3E%3C/g%3E%3C/svg%3E");
-	-webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='540' height='540' viewBox='0 0 540 540'%3E%3Cdefs%3E%3Cg id='card'%3E%3Crect x='2' y='5' width='20' height='14' rx='2.5'/%3E%3Cpath d='M2 10h20M5.5 14.5h4'/%3E%3C/g%3E%3Cg id='coin'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Cpath d='M12 7.2v9.6M14.6 9.4a2.6 2.6 0 0 0-2.6-1.5c-1.6 0-2.6.9-2.6 2s1 1.8 2.6 2.1 2.7 .9 2.7 2.1-1.1 2-2.7 2a2.7 2.7 0 0 1-2.7-1.6'/%3E%3C/g%3E%3Cg id='bank'%3E%3Cpath d='M3 9.5 12 4l9 5.5'/%3E%3Cpath d='M4.5 9.5V18M9.5 9.5V18M14.5 9.5V18M19.5 9.5V18'/%3E%3Cpath d='M2.5 20.5h19'/%3E%3C/g%3E%3Cg id='receipt'%3E%3Cpath d='M5 3h14v18l-2.3-1.6-2.4 1.6-2.3-1.6-2.4 1.6L7.3 19.4 5 21z'/%3E%3Cpath d='M8.6 8h6.8M8.6 12h6.8'/%3E%3C/g%3E%3Cg id='chart'%3E%3Cpath d='M4 4v16h16'/%3E%3Cpath d='M7.5 15.5l3.4-4.2 3 2.4 4.1-5.6'/%3E%3Cpath d='M18 8.1h-2.6M18 8.1v2.6'/%3E%3C/g%3E%3Cg id='wallet'%3E%3Crect x='2.5' y='6' width='19' height='13' rx='2.5'/%3E%3Cpath d='M2.5 10h19'/%3E%3Ccircle cx='17.5' cy='14' r='1.3'/%3E%3C/g%3E%3Cg id='vault'%3E%3Crect x='3' y='4' width='18' height='16' rx='2.5'/%3E%3Ccircle cx='12' cy='12' r='4.2'/%3E%3Cpath d='M12 7.8v1.2M12 15v1.2M7.8 12h1.2M15 12h1.2'/%3E%3C/g%3E%3Cg id='note'%3E%3Crect x='2' y='6.5' width='20' height='11' rx='2'/%3E%3Ccircle cx='12' cy='12' r='2.6'/%3E%3Cpath d='M5.6 12h.01M18.4 12h.01'/%3E%3C/g%3E%3Cg id='percent'%3E%3Ccircle cx='7.5' cy='7.5' r='2.8'/%3E%3Ccircle cx='16.5' cy='16.5' r='2.8'/%3E%3Cpath d='M19 5 5 19'/%3E%3C/g%3E%3Cg id='calc'%3E%3Crect x='4.5' y='2.5' width='15' height='19' rx='2.5'/%3E%3Crect x='7.5' y='5.5' width='9' height='3.5' rx='1'/%3E%3Cpath d='M8.2 13h.01M12 13h.01M15.8 13h.01M8.2 17h.01M12 17h.01M15.8 17h.01'/%3E%3C/g%3E%3Cg id='pos'%3E%3Crect x='5' y='2.5' width='14' height='19' rx='2.5'/%3E%3Crect x='7.8' y='5.2' width='8.4' height='4.6' rx='1'/%3E%3Cpath d='M8.6 13.4h.01M12 13.4h.01M15.4 13.4h.01M8.6 17h.01M12 17h.01M15.4 17h.01'/%3E%3C/g%3E%3Cg id='shield'%3E%3Cpath d='M12 2.8 4.6 6v6.1c0 4.4 3.1 7.6 7.4 9.1 4.3-1.5 7.4-4.7 7.4-9.1V6z'/%3E%3Cpath d='M8.9 12.1l2.2 2.2 4-4.4'/%3E%3C/g%3E%3Cg id='arrows'%3E%3Cpath d='M4 8.5h13M13.5 5l3.5 3.5-3.5 3.5'/%3E%3Cpath d='M20 15.5H7M10.5 12 7 15.5 10.5 19'/%3E%3C/g%3E%3C/defs%3E%3Cg fill='none' stroke='%23000' stroke-width='1.35' stroke-linecap='round' stroke-linejoin='round'%3E%3Cuse href='%23card' transform='translate(50.6 58.3) rotate(49.2) scale(1.16) translate(-12 -12)'/%3E%3Cuse href='%23card' transform='translate(590.6 58.3) rotate(49.2) scale(1.16) translate(-12 -12)'/%3E%3Cuse href='%23card' transform='translate(50.6 598.3) rotate(49.2) scale(1.16) translate(-12 -12)'/%3E%3Cuse href='%23coin' transform='translate(162.6 60.3) rotate(-36.6) scale(1.18) translate(-12 -12)'/%3E%3Cuse href='%23bank' transform='translate(279.4 75.1) rotate(-47.1) scale(1.11) translate(-12 -12)'/%3E%3Cuse href='%23receipt' transform='translate(348.5 76.3) rotate(22.4) scale(1.01) translate(-12 -12)'/%3E%3Cuse href='%23chart' transform='translate(520.7 87.5) rotate(17.9) scale(1.22) translate(-12 -12)'/%3E%3Cuse href='%23chart' transform='translate(-19.3 87.5) rotate(17.9) scale(1.22) translate(-12 -12)'/%3E%3Cuse href='%23wallet' transform='translate(29.3 127.1) rotate(3.3) scale(1.02) translate(-12 -12)'/%3E%3Cuse href='%23wallet' transform='translate(569.3 127.1) rotate(3.3) scale(1.02) translate(-12 -12)'/%3E%3Cuse href='%23vault' transform='translate(139.7 143.4) rotate(-54.5) scale(1.16) translate(-12 -12)'/%3E%3Cuse href='%23note' transform='translate(265.7 186.7) rotate(2.2) scale(1.22) translate(-12 -12)'/%3E%3Cuse href='%23percent' transform='translate(378.0 173.7) rotate(-4.9) scale(1.10) translate(-12 -12)'/%3E%3Cuse href='%23calc' transform='translate(521.8 197.7) rotate(39.5) scale(1.25) translate(-12 -12)'/%3E%3Cuse href='%23calc' transform='translate(-18.2 197.7) rotate(39.5) scale(1.25) translate(-12 -12)'/%3E%3Cuse href='%23pos' transform='translate(40.7 250.5) rotate(-24.5) scale(1.02) translate(-12 -12)'/%3E%3Cuse href='%23pos' transform='translate(580.7 250.5) rotate(-24.5) scale(1.02) translate(-12 -12)'/%3E%3Cuse href='%23shield' transform='translate(181.2 262.8) rotate(40.2) scale(1.14) translate(-12 -12)'/%3E%3Cuse href='%23arrows' transform='translate(303.0 295.0) rotate(-57.9) scale(1.07) translate(-12 -12)'/%3E%3Cuse href='%23card' transform='translate(407.5 267.8) rotate(55.7) scale(1.14) translate(-12 -12)'/%3E%3Cuse href='%23coin' transform='translate(455.3 279.3) rotate(32.3) scale(1.09) translate(-12 -12)'/%3E%3Cuse href='%23bank' transform='translate(24.3 365.9) rotate(53.8) scale(1.27) translate(-12 -12)'/%3E%3Cuse href='%23bank' transform='translate(564.3 365.9) rotate(53.8) scale(1.27) translate(-12 -12)'/%3E%3Cuse href='%23receipt' transform='translate(134.5 359.7) rotate(-46.3) scale(1.02) translate(-12 -12)'/%3E%3Cuse href='%23chart' transform='translate(291.4 354.8) rotate(6.9) scale(1.16) translate(-12 -12)'/%3E%3Cuse href='%23wallet' transform='translate(355.7 394.7) rotate(-42.8) scale(1.23) translate(-12 -12)'/%3E%3Cuse href='%23vault' transform='translate(458.4 372.3) rotate(-33.3) scale(1.09) translate(-12 -12)'/%3E%3Cuse href='%23note' transform='translate(87.9 507.8) rotate(-22.7) scale(1.31) translate(-12 -12)'/%3E%3Cuse href='%23note' transform='translate(87.9 -32.2) rotate(-22.7) scale(1.31) translate(-12 -12)'/%3E%3Cuse href='%23percent' transform='translate(141.2 478.4) rotate(41.1) scale(1.22) translate(-12 -12)'/%3E%3Cuse href='%23calc' transform='translate(241.2 521.2) rotate(-33.3) scale(1.09) translate(-12 -12)'/%3E%3Cuse href='%23calc' transform='translate(241.2 -18.8) rotate(-33.3) scale(1.09) translate(-12 -12)'/%3E%3Cuse href='%23pos' transform='translate(397.6 473.7) rotate(-23.6) scale(1.03) translate(-12 -12)'/%3E%3Cuse href='%23shield' transform='translate(456.5 492.0) rotate(-29.8) scale(1.21) translate(-12 -12)'/%3E%3Cuse href='%23shield' transform='translate(456.5 -48.0) rotate(-29.8) scale(1.21) translate(-12 -12)'/%3E%3C/g%3E%3C/svg%3E");
-	mask-repeat: repeat;
-	-webkit-mask-repeat: repeat;
-	/* Larger than the tile it was drawn at, so the marks read as artwork
-	 * rather than as wallpaper. */
-	mask-size: 420px 420px;
-	-webkit-mask-size: 420px 420px;
-}
-
-/* Meridian rings, behind the artwork. They must never compete with the headline. */
+/* Meridian rings on the panel. They must never compete with the headline. */
 .mo-brand-panel::after {
 	content: "";
 	position: absolute;
@@ -169,21 +169,40 @@
 	letter-spacing: 1px;
 }
 
-.mo-brand-body { max-width: 430px; }
+/* The headline and sub-line are free text in a settings form, so they are
+ * sized and bounded here rather than trusted. Without this a long entry runs
+ * past the panel, which is overflow:hidden, and simply disappears — and an
+ * unbroken string (a pasted URL) escapes sideways. */
+.mo-brand-body {
+	max-width: 430px;
+	min-width: 0;
+}
 .mo-brand-head {
-	font-size: 29px;
+	/* Shrinks on a narrow viewport instead of pushing the stat strip out. */
+	font-size: clamp(21px, 2.1vw, 29px);
 	line-height: 1.28;
 	font-weight: 500;
 	letter-spacing: -0.5px;
 	margin: 0 0 14px;
 	/* A line break typed into the setting is a line break on the page. */
 	white-space: pre-line;
+	/* Breaks mid-word only when there is no other option. */
+	overflow-wrap: anywhere;
+	display: -webkit-box;
+	-webkit-line-clamp: 4;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
 }
 .mo-brand-sub {
 	font-size: 14.5px;
 	line-height: 1.6;
 	opacity: 0.74;
 	margin: 0;
+	overflow-wrap: anywhere;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
 }
 
 .mo-brand-foot {
@@ -194,13 +213,28 @@
 	border-top: 1px solid rgba(255, 255, 255, 0.14);
 }
 .mo-brand-foot:empty { display: none; }
-.mo-stat-value { font-size: 19px; font-weight: 600; letter-spacing: -0.2px; }
+
+/* Free text again. A long figure or label is truncated rather than allowed to
+ * push the strip onto a second line and out of the panel. The server caps the
+ * row count; this caps the width of any one of them. */
+.mo-stat { min-width: 0; max-width: 150px; }
+.mo-stat-value {
+	font-size: 19px;
+	font-weight: 600;
+	letter-spacing: -0.2px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
 .mo-stat-label {
 	font-size: 10px;
 	letter-spacing: 1.5px;
 	text-transform: uppercase;
 	opacity: 0.64;
 	margin-top: 4px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 /* ------------------------------------------------------------ form pane -- */
@@ -212,7 +246,11 @@
 	align-items: center;
 	justify-content: center;
 	padding: 40px 32px;
-	background: var(--mo-surface);
+	/* Transparent, deliberately. Both the surface colour and the artwork are
+	 * painted by #page-login. An opaque colour here would mask the pattern over
+	 * exactly the area meant to show it — and, since this pane is only as tall
+	 * as the form it holds, would mask it in a band rather than everywhere. */
+	background-color: transparent;
 }
 
 #page-login .login-content,
@@ -341,9 +379,77 @@ body.mo-no-forgot [href*="forgot"] { display: none !important; }
 body.mo-no-email-link .btn-login-with-email-link,
 body.mo-no-email-link [href*="login-with-email-link"] { display: none !important; }
 
+
+/* ---------------------------------------------------------------- artwork --
+ *
+ * Two fixed layers on #page-login, which is a stacking context of its own
+ * (position + z-index above), so both sit at z-index -1 INSIDE it: above the
+ * surface colour, below every pane and panel. Without that context they would
+ * escape to the root and paint behind the page itself.
+ *
+ * The panel's own opaque background covers the left of both, so the artwork
+ * lands only on the light side — which is the side with room for it.
+ */
+
+#page-login::before {
+	content: "";
+	position: fixed;
+	inset: 0;
+	z-index: -1;
+	pointer-events: none;
+	/* A mask rather than a background image, so the marks are painted in the
+	 * brand colour and follow it when a deployment changes it. A background
+	 * image would bake one colour into the file. */
+	background-color: var(--mo-primary);
+	opacity: 0.065;
+	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='540' height='540' viewBox='0 0 540 540'%3E%3Cdefs%3E%3Cg id='card'%3E%3Crect x='2' y='5' width='20' height='14' rx='2.5'/%3E%3Cpath d='M2 10h20M5.5 14.5h4'/%3E%3C/g%3E%3Cg id='coin'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Cpath d='M12 7.2v9.6M14.6 9.4a2.6 2.6 0 0 0-2.6-1.5c-1.6 0-2.6.9-2.6 2s1 1.8 2.6 2.1 2.7 .9 2.7 2.1-1.1 2-2.7 2a2.7 2.7 0 0 1-2.7-1.6'/%3E%3C/g%3E%3Cg id='bank'%3E%3Cpath d='M3 9.5 12 4l9 5.5'/%3E%3Cpath d='M4.5 9.5V18M9.5 9.5V18M14.5 9.5V18M19.5 9.5V18'/%3E%3Cpath d='M2.5 20.5h19'/%3E%3C/g%3E%3Cg id='receipt'%3E%3Cpath d='M5 3h14v18l-2.3-1.6-2.4 1.6-2.3-1.6-2.4 1.6L7.3 19.4 5 21z'/%3E%3Cpath d='M8.6 8h6.8M8.6 12h6.8'/%3E%3C/g%3E%3Cg id='chart'%3E%3Cpath d='M4 4v16h16'/%3E%3Cpath d='M7.5 15.5l3.4-4.2 3 2.4 4.1-5.6'/%3E%3Cpath d='M18 8.1h-2.6M18 8.1v2.6'/%3E%3C/g%3E%3Cg id='wallet'%3E%3Crect x='2.5' y='6' width='19' height='13' rx='2.5'/%3E%3Cpath d='M2.5 10h19'/%3E%3Ccircle cx='17.5' cy='14' r='1.3'/%3E%3C/g%3E%3Cg id='vault'%3E%3Crect x='3' y='4' width='18' height='16' rx='2.5'/%3E%3Ccircle cx='12' cy='12' r='4.2'/%3E%3Cpath d='M12 7.8v1.2M12 15v1.2M7.8 12h1.2M15 12h1.2'/%3E%3C/g%3E%3Cg id='note'%3E%3Crect x='2' y='6.5' width='20' height='11' rx='2'/%3E%3Ccircle cx='12' cy='12' r='2.6'/%3E%3Cpath d='M5.6 12h.01M18.4 12h.01'/%3E%3C/g%3E%3Cg id='percent'%3E%3Ccircle cx='7.5' cy='7.5' r='2.8'/%3E%3Ccircle cx='16.5' cy='16.5' r='2.8'/%3E%3Cpath d='M19 5 5 19'/%3E%3C/g%3E%3Cg id='calc'%3E%3Crect x='4.5' y='2.5' width='15' height='19' rx='2.5'/%3E%3Crect x='7.5' y='5.5' width='9' height='3.5' rx='1'/%3E%3Cpath d='M8.2 13h.01M12 13h.01M15.8 13h.01M8.2 17h.01M12 17h.01M15.8 17h.01'/%3E%3C/g%3E%3Cg id='pos'%3E%3Crect x='5' y='2.5' width='14' height='19' rx='2.5'/%3E%3Crect x='7.8' y='5.2' width='8.4' height='4.6' rx='1'/%3E%3Cpath d='M8.6 13.4h.01M12 13.4h.01M15.4 13.4h.01M8.6 17h.01M12 17h.01M15.4 17h.01'/%3E%3C/g%3E%3Cg id='shield'%3E%3Cpath d='M12 2.8 4.6 6v6.1c0 4.4 3.1 7.6 7.4 9.1 4.3-1.5 7.4-4.7 7.4-9.1V6z'/%3E%3Cpath d='M8.9 12.1l2.2 2.2 4-4.4'/%3E%3C/g%3E%3Cg id='arrows'%3E%3Cpath d='M4 8.5h13M13.5 5l3.5 3.5-3.5 3.5'/%3E%3Cpath d='M20 15.5H7M10.5 12 7 15.5 10.5 19'/%3E%3C/g%3E%3C/defs%3E%3Cg fill='none' stroke='%23000' stroke-width='1.35' stroke-linecap='round' stroke-linejoin='round'%3E%3Cuse href='%23card' transform='translate(50.6 58.3) rotate(49.2) scale(1.16) translate(-12 -12)'/%3E%3Cuse href='%23card' transform='translate(590.6 58.3) rotate(49.2) scale(1.16) translate(-12 -12)'/%3E%3Cuse href='%23card' transform='translate(50.6 598.3) rotate(49.2) scale(1.16) translate(-12 -12)'/%3E%3Cuse href='%23coin' transform='translate(162.6 60.3) rotate(-36.6) scale(1.18) translate(-12 -12)'/%3E%3Cuse href='%23bank' transform='translate(279.4 75.1) rotate(-47.1) scale(1.11) translate(-12 -12)'/%3E%3Cuse href='%23receipt' transform='translate(348.5 76.3) rotate(22.4) scale(1.01) translate(-12 -12)'/%3E%3Cuse href='%23chart' transform='translate(520.7 87.5) rotate(17.9) scale(1.22) translate(-12 -12)'/%3E%3Cuse href='%23chart' transform='translate(-19.3 87.5) rotate(17.9) scale(1.22) translate(-12 -12)'/%3E%3Cuse href='%23wallet' transform='translate(29.3 127.1) rotate(3.3) scale(1.02) translate(-12 -12)'/%3E%3Cuse href='%23wallet' transform='translate(569.3 127.1) rotate(3.3) scale(1.02) translate(-12 -12)'/%3E%3Cuse href='%23vault' transform='translate(139.7 143.4) rotate(-54.5) scale(1.16) translate(-12 -12)'/%3E%3Cuse href='%23note' transform='translate(265.7 186.7) rotate(2.2) scale(1.22) translate(-12 -12)'/%3E%3Cuse href='%23percent' transform='translate(378.0 173.7) rotate(-4.9) scale(1.10) translate(-12 -12)'/%3E%3Cuse href='%23calc' transform='translate(521.8 197.7) rotate(39.5) scale(1.25) translate(-12 -12)'/%3E%3Cuse href='%23calc' transform='translate(-18.2 197.7) rotate(39.5) scale(1.25) translate(-12 -12)'/%3E%3Cuse href='%23pos' transform='translate(40.7 250.5) rotate(-24.5) scale(1.02) translate(-12 -12)'/%3E%3Cuse href='%23pos' transform='translate(580.7 250.5) rotate(-24.5) scale(1.02) translate(-12 -12)'/%3E%3Cuse href='%23shield' transform='translate(181.2 262.8) rotate(40.2) scale(1.14) translate(-12 -12)'/%3E%3Cuse href='%23arrows' transform='translate(303.0 295.0) rotate(-57.9) scale(1.07) translate(-12 -12)'/%3E%3Cuse href='%23card' transform='translate(407.5 267.8) rotate(55.7) scale(1.14) translate(-12 -12)'/%3E%3Cuse href='%23coin' transform='translate(455.3 279.3) rotate(32.3) scale(1.09) translate(-12 -12)'/%3E%3Cuse href='%23bank' transform='translate(24.3 365.9) rotate(53.8) scale(1.27) translate(-12 -12)'/%3E%3Cuse href='%23bank' transform='translate(564.3 365.9) rotate(53.8) scale(1.27) translate(-12 -12)'/%3E%3Cuse href='%23receipt' transform='translate(134.5 359.7) rotate(-46.3) scale(1.02) translate(-12 -12)'/%3E%3Cuse href='%23chart' transform='translate(291.4 354.8) rotate(6.9) scale(1.16) translate(-12 -12)'/%3E%3Cuse href='%23wallet' transform='translate(355.7 394.7) rotate(-42.8) scale(1.23) translate(-12 -12)'/%3E%3Cuse href='%23vault' transform='translate(458.4 372.3) rotate(-33.3) scale(1.09) translate(-12 -12)'/%3E%3Cuse href='%23note' transform='translate(87.9 507.8) rotate(-22.7) scale(1.31) translate(-12 -12)'/%3E%3Cuse href='%23note' transform='translate(87.9 -32.2) rotate(-22.7) scale(1.31) translate(-12 -12)'/%3E%3Cuse href='%23percent' transform='translate(141.2 478.4) rotate(41.1) scale(1.22) translate(-12 -12)'/%3E%3Cuse href='%23calc' transform='translate(241.2 521.2) rotate(-33.3) scale(1.09) translate(-12 -12)'/%3E%3Cuse href='%23calc' transform='translate(241.2 -18.8) rotate(-33.3) scale(1.09) translate(-12 -12)'/%3E%3Cuse href='%23pos' transform='translate(397.6 473.7) rotate(-23.6) scale(1.03) translate(-12 -12)'/%3E%3Cuse href='%23shield' transform='translate(456.5 492.0) rotate(-29.8) scale(1.21) translate(-12 -12)'/%3E%3Cuse href='%23shield' transform='translate(456.5 -48.0) rotate(-29.8) scale(1.21) translate(-12 -12)'/%3E%3C/g%3E%3C/svg%3E");
+	-webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='540' height='540' viewBox='0 0 540 540'%3E%3Cdefs%3E%3Cg id='card'%3E%3Crect x='2' y='5' width='20' height='14' rx='2.5'/%3E%3Cpath d='M2 10h20M5.5 14.5h4'/%3E%3C/g%3E%3Cg id='coin'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Cpath d='M12 7.2v9.6M14.6 9.4a2.6 2.6 0 0 0-2.6-1.5c-1.6 0-2.6.9-2.6 2s1 1.8 2.6 2.1 2.7 .9 2.7 2.1-1.1 2-2.7 2a2.7 2.7 0 0 1-2.7-1.6'/%3E%3C/g%3E%3Cg id='bank'%3E%3Cpath d='M3 9.5 12 4l9 5.5'/%3E%3Cpath d='M4.5 9.5V18M9.5 9.5V18M14.5 9.5V18M19.5 9.5V18'/%3E%3Cpath d='M2.5 20.5h19'/%3E%3C/g%3E%3Cg id='receipt'%3E%3Cpath d='M5 3h14v18l-2.3-1.6-2.4 1.6-2.3-1.6-2.4 1.6L7.3 19.4 5 21z'/%3E%3Cpath d='M8.6 8h6.8M8.6 12h6.8'/%3E%3C/g%3E%3Cg id='chart'%3E%3Cpath d='M4 4v16h16'/%3E%3Cpath d='M7.5 15.5l3.4-4.2 3 2.4 4.1-5.6'/%3E%3Cpath d='M18 8.1h-2.6M18 8.1v2.6'/%3E%3C/g%3E%3Cg id='wallet'%3E%3Crect x='2.5' y='6' width='19' height='13' rx='2.5'/%3E%3Cpath d='M2.5 10h19'/%3E%3Ccircle cx='17.5' cy='14' r='1.3'/%3E%3C/g%3E%3Cg id='vault'%3E%3Crect x='3' y='4' width='18' height='16' rx='2.5'/%3E%3Ccircle cx='12' cy='12' r='4.2'/%3E%3Cpath d='M12 7.8v1.2M12 15v1.2M7.8 12h1.2M15 12h1.2'/%3E%3C/g%3E%3Cg id='note'%3E%3Crect x='2' y='6.5' width='20' height='11' rx='2'/%3E%3Ccircle cx='12' cy='12' r='2.6'/%3E%3Cpath d='M5.6 12h.01M18.4 12h.01'/%3E%3C/g%3E%3Cg id='percent'%3E%3Ccircle cx='7.5' cy='7.5' r='2.8'/%3E%3Ccircle cx='16.5' cy='16.5' r='2.8'/%3E%3Cpath d='M19 5 5 19'/%3E%3C/g%3E%3Cg id='calc'%3E%3Crect x='4.5' y='2.5' width='15' height='19' rx='2.5'/%3E%3Crect x='7.5' y='5.5' width='9' height='3.5' rx='1'/%3E%3Cpath d='M8.2 13h.01M12 13h.01M15.8 13h.01M8.2 17h.01M12 17h.01M15.8 17h.01'/%3E%3C/g%3E%3Cg id='pos'%3E%3Crect x='5' y='2.5' width='14' height='19' rx='2.5'/%3E%3Crect x='7.8' y='5.2' width='8.4' height='4.6' rx='1'/%3E%3Cpath d='M8.6 13.4h.01M12 13.4h.01M15.4 13.4h.01M8.6 17h.01M12 17h.01M15.4 17h.01'/%3E%3C/g%3E%3Cg id='shield'%3E%3Cpath d='M12 2.8 4.6 6v6.1c0 4.4 3.1 7.6 7.4 9.1 4.3-1.5 7.4-4.7 7.4-9.1V6z'/%3E%3Cpath d='M8.9 12.1l2.2 2.2 4-4.4'/%3E%3C/g%3E%3Cg id='arrows'%3E%3Cpath d='M4 8.5h13M13.5 5l3.5 3.5-3.5 3.5'/%3E%3Cpath d='M20 15.5H7M10.5 12 7 15.5 10.5 19'/%3E%3C/g%3E%3C/defs%3E%3Cg fill='none' stroke='%23000' stroke-width='1.35' stroke-linecap='round' stroke-linejoin='round'%3E%3Cuse href='%23card' transform='translate(50.6 58.3) rotate(49.2) scale(1.16) translate(-12 -12)'/%3E%3Cuse href='%23card' transform='translate(590.6 58.3) rotate(49.2) scale(1.16) translate(-12 -12)'/%3E%3Cuse href='%23card' transform='translate(50.6 598.3) rotate(49.2) scale(1.16) translate(-12 -12)'/%3E%3Cuse href='%23coin' transform='translate(162.6 60.3) rotate(-36.6) scale(1.18) translate(-12 -12)'/%3E%3Cuse href='%23bank' transform='translate(279.4 75.1) rotate(-47.1) scale(1.11) translate(-12 -12)'/%3E%3Cuse href='%23receipt' transform='translate(348.5 76.3) rotate(22.4) scale(1.01) translate(-12 -12)'/%3E%3Cuse href='%23chart' transform='translate(520.7 87.5) rotate(17.9) scale(1.22) translate(-12 -12)'/%3E%3Cuse href='%23chart' transform='translate(-19.3 87.5) rotate(17.9) scale(1.22) translate(-12 -12)'/%3E%3Cuse href='%23wallet' transform='translate(29.3 127.1) rotate(3.3) scale(1.02) translate(-12 -12)'/%3E%3Cuse href='%23wallet' transform='translate(569.3 127.1) rotate(3.3) scale(1.02) translate(-12 -12)'/%3E%3Cuse href='%23vault' transform='translate(139.7 143.4) rotate(-54.5) scale(1.16) translate(-12 -12)'/%3E%3Cuse href='%23note' transform='translate(265.7 186.7) rotate(2.2) scale(1.22) translate(-12 -12)'/%3E%3Cuse href='%23percent' transform='translate(378.0 173.7) rotate(-4.9) scale(1.10) translate(-12 -12)'/%3E%3Cuse href='%23calc' transform='translate(521.8 197.7) rotate(39.5) scale(1.25) translate(-12 -12)'/%3E%3Cuse href='%23calc' transform='translate(-18.2 197.7) rotate(39.5) scale(1.25) translate(-12 -12)'/%3E%3Cuse href='%23pos' transform='translate(40.7 250.5) rotate(-24.5) scale(1.02) translate(-12 -12)'/%3E%3Cuse href='%23pos' transform='translate(580.7 250.5) rotate(-24.5) scale(1.02) translate(-12 -12)'/%3E%3Cuse href='%23shield' transform='translate(181.2 262.8) rotate(40.2) scale(1.14) translate(-12 -12)'/%3E%3Cuse href='%23arrows' transform='translate(303.0 295.0) rotate(-57.9) scale(1.07) translate(-12 -12)'/%3E%3Cuse href='%23card' transform='translate(407.5 267.8) rotate(55.7) scale(1.14) translate(-12 -12)'/%3E%3Cuse href='%23coin' transform='translate(455.3 279.3) rotate(32.3) scale(1.09) translate(-12 -12)'/%3E%3Cuse href='%23bank' transform='translate(24.3 365.9) rotate(53.8) scale(1.27) translate(-12 -12)'/%3E%3Cuse href='%23bank' transform='translate(564.3 365.9) rotate(53.8) scale(1.27) translate(-12 -12)'/%3E%3Cuse href='%23receipt' transform='translate(134.5 359.7) rotate(-46.3) scale(1.02) translate(-12 -12)'/%3E%3Cuse href='%23chart' transform='translate(291.4 354.8) rotate(6.9) scale(1.16) translate(-12 -12)'/%3E%3Cuse href='%23wallet' transform='translate(355.7 394.7) rotate(-42.8) scale(1.23) translate(-12 -12)'/%3E%3Cuse href='%23vault' transform='translate(458.4 372.3) rotate(-33.3) scale(1.09) translate(-12 -12)'/%3E%3Cuse href='%23note' transform='translate(87.9 507.8) rotate(-22.7) scale(1.31) translate(-12 -12)'/%3E%3Cuse href='%23note' transform='translate(87.9 -32.2) rotate(-22.7) scale(1.31) translate(-12 -12)'/%3E%3Cuse href='%23percent' transform='translate(141.2 478.4) rotate(41.1) scale(1.22) translate(-12 -12)'/%3E%3Cuse href='%23calc' transform='translate(241.2 521.2) rotate(-33.3) scale(1.09) translate(-12 -12)'/%3E%3Cuse href='%23calc' transform='translate(241.2 -18.8) rotate(-33.3) scale(1.09) translate(-12 -12)'/%3E%3Cuse href='%23pos' transform='translate(397.6 473.7) rotate(-23.6) scale(1.03) translate(-12 -12)'/%3E%3Cuse href='%23shield' transform='translate(456.5 492.0) rotate(-29.8) scale(1.21) translate(-12 -12)'/%3E%3Cuse href='%23shield' transform='translate(456.5 -48.0) rotate(-29.8) scale(1.21) translate(-12 -12)'/%3E%3C/g%3E%3C/svg%3E");
+	mask-repeat: repeat;
+	-webkit-mask-repeat: repeat;
+	/* The tile is drawn at 540. Displayed at 400, the icons land near 21px —
+	 * legible as objects rather than speckle, while the field still behaves as
+	 * wallpaper. Much smaller and the shapes stop being a card and a bank and
+	 * become grey dots; much larger and the spacing opens up until it reads as
+	 * sparse rather than patterned. */
+	mask-size: 400px 400px;
+	-webkit-mask-size: 400px 400px;
+}
+
+/* The clear space behind the words. ::after paints after ::before at the same
+ * z-index, so it lands on top of the artwork without needing a z-index of its
+ * own.
+ *
+ * It is the SURFACE colour, so it tints nothing — it simply stops the stencil
+ * showing through where the text is. Text over line-art is genuinely harder to
+ * read: the eye gets competing edges at the letterforms, and a descender and
+ * the stroke of a bank column are drawn at about the same weight.
+ *
+ * The centre is a custom property because it has to follow the form: the
+ * layout stacks below 900px, and Brand Right moves the form to the other side.
+ */
+#page-login::after {
+	content: "";
+	position: fixed;
+	inset: 0;
+	z-index: -1;
+	pointer-events: none;
+	background: radial-gradient(
+		26rem 21rem at var(--mo-wash-x, 79%) var(--mo-wash-y, 50%),
+		var(--mo-surface) 0 45%,
+		transparent 100%
+	);
+}
+
 /* ------------------------------------------------------------- layouts --- */
 
 #page-login[data-mo-layout="split-right"] .page_content { flex-direction: row-reverse; }
+@media (min-width: 901px) {
+	#page-login[data-mo-layout="split-right"] .page_content {
+		background-image: linear-gradient(to left, var(--mo-primary) 0 58%, transparent 58%);
+	}
+	/* The cleared space follows the form across. */
+	#page-login[data-mo-layout="split-right"] { --mo-wash-x: 21%; }
+}
 #page-login[data-mo-layout="split-right"] .page_content:not(:has(.mo-brand-panel)) > * {
 	margin-left: 0;
 	margin-right: 58%;
@@ -351,7 +457,13 @@ body.mo-no-email-link [href*="login-with-email-link"] { display: none !important
 
 /* Centred: the panel becomes a full-bleed backdrop and the form sits on a
  * raised card above it. */
-#page-login[data-mo-layout="centred"] .page_content { display: block; position: relative; }
+/* Centred covers the viewport with the panel, so the artwork and its wash are
+ * hidden behind it. Nothing to do but stop painting the split. */
+#page-login[data-mo-layout="centred"] .page_content {
+	display: block;
+	position: relative;
+	background-image: none;
+}
 #page-login[data-mo-layout="centred"] .page_content:not(:has(.mo-brand-panel)) > * {
 	margin-left: 0;
 }
@@ -381,7 +493,9 @@ body.mo-no-email-link [href*="login-with-email-link"] { display: none !important
 /* ---------------------------------------------------------- responsive --- */
 
 @media (max-width: 900px) {
-	#page-login .page_content { display: block; min-height: 0; }
+	/* The form now occupies the lower middle of the screen. */
+	#page-login { --mo-wash-x: 50%; --mo-wash-y: 62%; }
+	#page-login .page_content { display: block; min-height: 0; background-image: none; }
 	#page-login .page_content:not(:has(.mo-brand-panel)) > * { margin-left: 0; }
 	#page-login[data-mo-layout] .mo-brand-panel {
 		position: static;

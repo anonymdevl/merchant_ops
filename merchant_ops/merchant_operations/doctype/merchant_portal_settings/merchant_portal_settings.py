@@ -1,3 +1,5 @@
+import re
+
 import frappe
 from frappe.model.document import Document
 from frappe.utils import cint
@@ -12,6 +14,15 @@ DEFAULT_STATS = [
 
 class MerchantPortalSettings(Document):
     def validate(self):
+        if len(self.stats or []) > MAX_STATS:
+            frappe.msgprint(
+                frappe._(
+                    "Only the first {0} stat rows are shown. The strip is one line "
+                    "on the brand panel and wraps out of sight beyond that."
+                ).format(MAX_STATS),
+                indicator="orange",
+                alert=True,
+            )
         if self.login_layout in ("Split", "Split - Brand Right") and not self.brand_logo_reversed:
             if self.brand_logo:
                 frappe.msgprint(
@@ -49,6 +60,21 @@ class MerchantPortalSettings(Document):
             frappe.log_error(title="merchant_ops: could not apply brand to Website Settings")
 
 
+MAX_STATS = 4
+
+#: A value reaching :root as an invalid custom property makes every var() that
+#: uses it invalid at computed-value time, so `background: var(--mo-primary)`
+#: resolves to nothing and the panel loses its colour entirely. The Color
+#: control cannot produce that, but the REST API can.
+_HEX = re.compile(r"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")
+
+
+def _colour(value, fallback):
+    """A usable CSS colour, or the fallback. Never something var() will reject."""
+    value = (value or "").strip()
+    return value if _HEX.match(value) else fallback
+
+
 def _contrast_on(hex_colour):
     """Readable text colour for a given background, by WCAG relative luminance."""
     try:
@@ -82,14 +108,14 @@ def branding():
     except Exception:
         return {}
 
-    primary = s.brand_primary_colour or "#0E2A38"
-    accent = s.brand_accent_colour or primary
+    primary = _colour(s.brand_primary_colour, "#0E2A38")
+    accent = _colour(s.brand_accent_colour, primary)
 
     stats = [
         {"value": r.stat_value, "label": r.stat_label}
         for r in (s.stats or [])
         if r.stat_value
-    ]
+    ][:MAX_STATS]
     if cint(s.show_stats) and not stats:
         stats = [{"value": d["stat_value"], "label": d["stat_label"]} for d in DEFAULT_STATS]
 
